@@ -54,7 +54,10 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
 //-----------------------------------------------------------------------------
+		//Step 1: Time step - add dt
+		clipCtrl->keyframeTime_sec += dt;
 
+		//Step 2: Resolve keyframe
 
 
 //-----------------------------------------------------------------------------
