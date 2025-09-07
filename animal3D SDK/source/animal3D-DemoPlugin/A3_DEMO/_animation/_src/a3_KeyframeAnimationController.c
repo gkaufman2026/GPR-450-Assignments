@@ -55,22 +55,23 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 	{
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
-//-----------------------------------------------------------------------------
-		//Step 1: Time step - add dt
-		
+//-----------------------------------------------------------------------------		
 		// Step 2: a. paused dt = 0
 		if (dt == 0) return 0;
 		
+		//Step 1: Time step - add dt
 		clipCtrl->keyframeTime_sec += dt;
 		clipCtrl->clipTime_sec += dt;
 
-		if (clipCtrl->keyframeTime_sec >= 1) {
-			clipCtrl->keyframeIndex++;
-			clipCtrl->keyframeTime_sec = 0;
-		}
+		// Austin prototype code
+		/*if (clipCtrl->clipTime_sec >= clipCtrl->clipPool->sample[clipCtrl->keyframe->index].time_sec) {
+			clipCtrl->keyframeIndex = 0;
+			clipCtrl->clipTime_sec -= dt;
+		}*/
 
-
-		//Step 2: Resolve keyframe - b. forward: dt > 0
+		//Step 2: Resolve keyframe 
+		// - b. forward: dt > 0
+		
 				//	i. stop
 				//	ii. step(s) taken
 				//  iii: clip exited
@@ -91,8 +92,8 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 		// Multiplying the inverse instead of dividing
 		// SampleIndex possibly representing time values of keyframe 
-			// Tristian helped and stated that it should be seen as a time step for when the keyfrae starts and ends in clip time
-		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->sampleIndex0].time_sec) * clipCtrl->keyframe->durationInv;
+			// Tristian helped and stated that it should be seen as a time step for when the keyframe starts and ends in clip time
+		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->index].time_sec) * clipCtrl->keyframe->durationInv;
 		clipCtrl->clipParam = clipTimeSec / clipDurSec;
  
 
