@@ -48,6 +48,13 @@ a3i32 a3clipControllerInit(a3_ClipController* clipCtrl_out, const a3byte ctrlNam
 	return -1;
 }
 
+a3f64 clipt0(a3_ClipController* clipCtrl, a3_Clip* clip)
+{
+	a3_Keyframe clipFirstKeyFrame = clipCtrl->clipPool->keyframe[clip->keyframeIndex_first];
+	a3f64 clipt0 = clipCtrl->clipPool->sample[clipFirstKeyFrame.sampleIndex0].time_sec;
+	return clipt0;
+}
+
 // update clip controller
 a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 {
@@ -56,9 +63,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
 //-----------------------------------------------------------------------------		
-		// Step 2: a. paused dt = 0
-		if (dt == 0) return 0;
-		
 		//Step 1: Time step - add dt
 		clipCtrl->keyframeTime_sec += dt;
 		clipCtrl->clipTime_sec += dt;
@@ -68,6 +72,41 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			clipCtrl->keyframeIndex = 0;
 			clipCtrl->clipTime_sec -= dt;
 		}*/
+		// Step 2: a. paused dt = 0
+		if (dt == 0) return 0;
+
+		/*if (clipCtrl->keyframeTime_sec >= 1) {
+			clipCtrl->keyframeIndex++;
+			clipCtrl->keyframeTime_sec = 0;
+		}*/
+
+		a3f64 currentClipt0 = clipt0(clipCtrl, clipCtrl->clip);
+
+		// While current time is outside of the active clip
+		while (clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < currentClipt0)
+		{
+			if (dt > 0)  // forward
+			{
+				// clipCtrl->clip becomes the next clip in the clipPool
+			}
+			else  //dt < 0  reverse
+			{
+
+			}
+		}
+
+		// While current time is outside of the active keyframe
+		while (clipCtrl->keyframeTime_sec >= clipCtrl->clipPool->sample[clipCtrl->keyframe->sampleIndex1].time_sec || clipCtrl->keyframeTime_sec < clipCtrl->clipPool->sample[clipCtrl->keyframe->sampleIndex0].time_sec)
+		{
+			if (dt > 0)  // forward
+			{
+
+			}
+			else  //dt < 0  reverse
+			{
+
+			}
+		}
 
 		//Step 2: Resolve keyframe 
 		// - b. forward: dt > 0
@@ -80,20 +119,18 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//  ii. step(s) taken
 				//  iii. clip exited
 	 
-		// 3. Normalized keyframe/clip: relative time / duration. Worked on by Jerry (everyone was present in Joyce 101)
+		// 3. Normalized keyframe/clip: relative time / duration. Worked on primarily by Jerry (everyone was present in Joyce 101)
 		double clipTimeSec = clipCtrl->clipTime_sec;
 		double keyframeSec = clipCtrl->keyframeTime_sec;
 		double clipDurSec = clipCtrl->clip->duration_sec;
 
-		// t can equal the time within keyframe or clip
-
 		// moments within the current group of clips
 		a3_Sample* clipArr = clipCtrl->clipPool->sample;
 
-		// Multiplying the inverse instead of dividing
-		// SampleIndex possibly representing time values of keyframe 
+		// SampleIndex possibly representing time values of keyframe
 			// Tristian helped and stated that it should be seen as a time step for when the keyframe starts and ends in clip time
-		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->index].time_sec) * clipCtrl->keyframe->durationInv;
+		// u = (t - t0) / (t1 - t0)   _ t can represent the current time in terms of the clip or in terms of the clip
+		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->sampleIndex0].time_sec) * clipCtrl->keyframe->durationInv; // Multiplying the inverse instead of dividing
 		clipCtrl->clipParam = clipTimeSec / clipDurSec;
  
 
@@ -101,6 +138,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //****END-TO-DO-PROJECT-1
 //-----------------------------------------------------------------------------
 	}
+
 	return -1;
 }
 
