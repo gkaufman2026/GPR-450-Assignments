@@ -48,7 +48,7 @@ a3i32 a3clipControllerInit(a3_ClipController* clipCtrl_out, const a3byte ctrlNam
 	return -1;
 }
 
-a3f64 clipt0(a3_ClipController* clipCtrl, a3_Clip* clip)
+a3f64 clipt0(a3_ClipController* clipCtrl, const a3_Clip* clip)
 {
 	a3_Keyframe clipFirstKeyFrame = clipCtrl->clipPool->keyframe[clip->keyframeIndex_first];
 	a3f64 clipt0 = clipCtrl->clipPool->sample[clipFirstKeyFrame.sampleIndex0].time_sec;
@@ -88,10 +88,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			if (dt > 0)  // forward
 			{
 				// clipCtrl->clip becomes the next clip in the clipPool
+				break;
 			}
 			else  //dt < 0  reverse
 			{
-
+				break;
 			}
 		}
 
@@ -100,11 +101,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		{
 			if (dt > 0)  // forward
 			{
-
+				break;
 			}
 			else  //dt < 0  reverse
 			{
-
+				break;
 			}
 		}
 
