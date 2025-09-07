@@ -26,6 +26,8 @@
 
 #include <string.h>
 
+// Added for debugging printf - Jerry
+#include <stdio.h>
 
 // macros to help with names
 #define A3_CLIPCTRL_DEFAULTNAME		("unnamed clip ctrl")
@@ -55,10 +57,44 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		//Step 1: Time step - add dt
+		
+		if (dt == 0) return 0;
+		
 		clipCtrl->keyframeTime_sec += dt;
+		clipCtrl->clipTime_sec += dt;
+
+		if (clipCtrl->keyframeTime_sec >= 1) {
+			clipCtrl->keyframeIndex++;
+			clipCtrl->keyframeTime_sec = 0;
+		}
 
 		//Step 2: Resolve keyframe
+			// a. paused dt = 0
+			// b. forward: dt > 0
+				//	i. stop
+				//	ii. step(s) taken
+				//  iii: clip exited
+			// c. reverse: dt < 0
+				//  i. stop
+				//  ii. step(s) taken
+				//  iii. clip exited
+		// 3. Normalized keyframe/clip: relative time / duration
 
+		double clipTimeSec = clipCtrl->clipTime_sec;
+		double keyframeSec = clipCtrl->keyframeTime_sec;
+		double clipDurSec = clipCtrl->clip->duration_sec;
+
+		// t can equal the time within keyframe or clip
+
+		// moments within the current group of clips
+		a3_Sample* clipArr = clipCtrl->clipPool->sample;
+		a3_Keyframe* keyframe = clipCtrl->keyframe;
+
+		// Multiplying the inverse instead of dividing
+		// SampleIndex possibly representing time values of keyframe 
+		clipCtrl->keyframeParam = (keyframeSec - clipArr[keyframe->sampleIndex0].time_sec) * keyframe->durationInv;
+		clipCtrl->clipParam = clipTimeSec / clipDurSec;
+ 
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-1
