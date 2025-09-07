@@ -58,6 +58,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //-----------------------------------------------------------------------------
 		//Step 1: Time step - add dt
 		
+		// Step 2: a. paused dt = 0
 		if (dt == 0) return 0;
 		
 		clipCtrl->keyframeTime_sec += dt;
@@ -68,9 +69,8 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			clipCtrl->keyframeTime_sec = 0;
 		}
 
-		//Step 2: Resolve keyframe
-			// a. paused dt = 0
-			// b. forward: dt > 0
+
+		//Step 2: Resolve keyframe - b. forward: dt > 0
 				//	i. stop
 				//	ii. step(s) taken
 				//  iii: clip exited
@@ -78,8 +78,8 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//  i. stop
 				//  ii. step(s) taken
 				//  iii. clip exited
-		// 3. Normalized keyframe/clip: relative time / duration
-
+	 
+		// 3. Normalized keyframe/clip: relative time / duration. Worked on by Jerry (everyone was present in Joyce 101)
 		double clipTimeSec = clipCtrl->clipTime_sec;
 		double keyframeSec = clipCtrl->keyframeTime_sec;
 		double clipDurSec = clipCtrl->clip->duration_sec;
@@ -88,11 +88,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 		// moments within the current group of clips
 		a3_Sample* clipArr = clipCtrl->clipPool->sample;
-		a3_Keyframe* keyframe = clipCtrl->keyframe;
 
 		// Multiplying the inverse instead of dividing
 		// SampleIndex possibly representing time values of keyframe 
-		clipCtrl->keyframeParam = (keyframeSec - clipArr[keyframe->sampleIndex0].time_sec) * keyframe->durationInv;
+			// Tristian helped and stated that it should be seen as a time step for when the keyfrae starts and ends in clip time
+		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->sampleIndex0].time_sec) * clipCtrl->keyframe->durationInv;
 		clipCtrl->clipParam = clipTimeSec / clipDurSec;
  
 
