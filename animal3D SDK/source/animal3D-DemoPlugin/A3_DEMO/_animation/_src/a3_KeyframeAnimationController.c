@@ -72,6 +72,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			clipCtrl->keyframeIndex = 0;
 			clipCtrl->clipTime_sec -= dt;
 		}*/
+
 		// Step 2: a. paused dt = 0
 		if (dt == 0) return 0;
 
@@ -106,12 +107,13 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		//}
 
 		// While current time is outside of the active keyframe
-		while (keyframeSec >= clipArr[clipCtrl->keyframe->sampleIndex1].time_sec || keyframeSec < clipArr[clipCtrl->keyframe->sampleIndex0].time_sec)
+		while (keyframeSec >= clipArr[clipCtrl->keyframe->sampleIndex1].time_sec || keyframeSec < clipArr[clipCtrl->keyframeIndex].time_sec)
 		{
 			if (dt > 0)  // forward
 			{
-				clipCtrl->keyframeIndex = clipCtrl->clipPool->keyframeCount - 1;
+				clipCtrl->keyframeIndex++;
 				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+				// implementing transition
 				break;
 			}
 			else  //dt < 0  reverse
@@ -136,7 +138,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		// SampleIndex possibly representing time values of keyframe
 			// Tristian helped and stated that it should be seen as a time step for when the keyframe starts and ends in clip time
 		// u = (t - t0) / (t1 - t0)   _ t can represent the current time in terms of the clip or in terms of the clip
-		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->sampleIndex0].time_sec) * clipCtrl->keyframe->durationInv; // Multiplying the inverse instead of dividing
+		clipCtrl->keyframeParam = (keyframeSec - clipArr[clipCtrl->keyframe->sampleIndex0].time_sec) * clipCtrl->keyframe[clipCtrl->keyframeIndex].durationInv; // Multiplying the inverse instead of dividing
 		clipCtrl->clipParam = clipTimeSec / clipDurSec;
  
 
