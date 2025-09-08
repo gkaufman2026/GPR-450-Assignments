@@ -81,31 +81,42 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		}*/
 
 		a3f64 currentClipt0 = clipt0(clipCtrl, clipCtrl->clip);
+		double clipTimeSec = clipCtrl->clipTime_sec;
+		double keyframeSec = clipCtrl->keyframeTime_sec;
+		double clipDurSec = clipCtrl->clip->duration_sec;
+
+
+		// moments within the current group of clips
+		a3_Sample* clipArr = clipCtrl->clipPool->sample;
 
 		// While current time is outside of the active clip
-		while (clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < currentClipt0)
-		{
-			if (dt > 0)  // forward
-			{
-				// clipCtrl->clip becomes the next clip in the clipPool
-				break;
-			}
-			else  //dt < 0  reverse
-			{
-				break;
-			}
-		}
+		//while (clipTimeSec >= clipDurSec || clipTimeSec < currentClipt0)
+		//{
+		//	if (dt > 0)  // forward
+		//	{
+		//		// clipCtrl->clip becomes the next clip in the clipPool
+		//		clipCtrl->clipIndex = clipCtrl->clipPool->clipCount - 1;
+		//		clipCtrl->clip = &clipCtrl->clipPool->clip[clipCtrl->clipIndex];
+		//		break;
+		//	}
+		//	else  //dt < 0  reverse
+		//	{
+		//		//break;
+		//	}
+		//}
 
 		// While current time is outside of the active keyframe
-		while (clipCtrl->keyframeTime_sec >= clipCtrl->clipPool->sample[clipCtrl->keyframe->sampleIndex1].time_sec || clipCtrl->keyframeTime_sec < clipCtrl->clipPool->sample[clipCtrl->keyframe->sampleIndex0].time_sec)
+		while (keyframeSec >= clipArr[clipCtrl->keyframe->sampleIndex1].time_sec || keyframeSec < clipArr[clipCtrl->keyframe->sampleIndex0].time_sec)
 		{
 			if (dt > 0)  // forward
 			{
+				clipCtrl->keyframeIndex = clipCtrl->clipPool->keyframeCount - 1;
+				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				break;
 			}
 			else  //dt < 0  reverse
 			{
-				break;
+				//break;
 			}
 		}
 
@@ -121,12 +132,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//  iii. clip exited
 	 
 		// 3. Normalized keyframe/clip: relative time / duration. Worked on primarily by Jerry (everyone was present in Joyce 101)
-		double clipTimeSec = clipCtrl->clipTime_sec;
-		double keyframeSec = clipCtrl->keyframeTime_sec;
-		double clipDurSec = clipCtrl->clip->duration_sec;
-
-		// moments within the current group of clips
-		a3_Sample* clipArr = clipCtrl->clipPool->sample;
 
 		// SampleIndex possibly representing time values of keyframe
 			// Tristian helped and stated that it should be seen as a time step for when the keyframe starts and ends in clip time
