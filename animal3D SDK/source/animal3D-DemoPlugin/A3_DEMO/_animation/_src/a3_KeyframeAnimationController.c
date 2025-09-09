@@ -90,6 +90,14 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				case a3clip_reverseFlag:
 					clipCtrl->playback_sec = -1;
 					return 0;
+				case a3clip_playFlag:
+					//Austin
+					clipCtrl->keyframeIndex = 0;
+					//adds remaining time onto the new clip
+					clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
+					t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
+					t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
+					break;
 				default:
 					break;
 			}
@@ -127,7 +135,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 					break;
 				}
 
-				// Jerry and Jerry
+				// Jerry and Austin
 				clipCtrl->keyframeIndex--;
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				break;
