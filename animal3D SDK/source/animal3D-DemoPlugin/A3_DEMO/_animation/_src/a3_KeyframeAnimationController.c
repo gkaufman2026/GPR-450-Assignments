@@ -64,7 +64,9 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
 //-----------------------------------------------------------------------------		
 		//Step 1: Time step - add dt
-		clipCtrl->keyframeTime_sec += dt * clipCtrl->playback_sec;
+		// Austin
+		dt *= clipCtrl->playback_sec;
+		clipCtrl->keyframeTime_sec += dt;
 		clipCtrl->clipTime_sec += dt;
 
 		// Step 2: a. paused dt = 0
@@ -73,15 +75,20 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		a3f64 t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 		a3f64 t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
 
+		// Checking if clip time is greater than clip duration (overstep)
 		if (clipCtrl->clipTime_sec > clipCtrl->clip->duration_sec) {
 			// TRANSITION FLAGS
 
-			switch (clipCtrl->clip->transitionReverse->flag) {
+			// Jerry and Austin
+			switch (clipCtrl->clip->transitionReverse->flag) { 
 				case a3clip_stopFlag:
 					clipCtrl->clipPool->clip->keyframeDirection = 0;
 					clipCtrl->keyframeParam = 1;
 					clipCtrl->clipParam = 1;
 					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeIndex_final;
+					return 0;
+				case a3clip_reverseFlag:
+					clipCtrl->playback_sec = -1;
 					return 0;
 				default:
 					break;
@@ -97,19 +104,32 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		// sample count = keyframeCount + 1
 
 		// While current time is outside of the active keyframe
+		// Jerry
 		while (clipCtrl->clipTime_sec >= t1 || clipCtrl->clipTime_sec < t0)
 		{
+			// if forwards playing
+			// Jerry and Austin
 			if (dt > 0) 
 			{
 				clipCtrl->keyframeIndex++;
 				// Updating t0 and t1 values to ensure they get updated
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
-				// implementing transition
 				break;
 			}
-			else  //dt < 0  reverse
+			// If backwards playing
+			// Austin
+			else
 			{
+				// Austin - Jerry is disappointed in him.
+				if (clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec == 0) {
+					clipCtrl->playback_sec = 1;
+					break;
+				}
+
+				// Jerry and Jerry
+				clipCtrl->keyframeIndex--;
+				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				break;
 			}
 		}
