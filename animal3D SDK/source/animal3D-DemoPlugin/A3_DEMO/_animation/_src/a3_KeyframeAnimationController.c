@@ -78,11 +78,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 			switch (clipCtrl->clip->transitionReverse->flag) {
 				case a3clip_stopFlag:
-					t1 = clipCtrl->clip->durationInv * t1;
 					clipCtrl->clipPool->clip->keyframeDirection = 0;
-					clipCtrl->clipIndex = 0;
-					clipCtrl->keyframeIndex = 0;
-					break;
+					clipCtrl->keyframeParam = 1;
+					clipCtrl->clipParam = 1;
+					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeIndex_final;
+					return 0;
 				default:
 					break;
 			}
