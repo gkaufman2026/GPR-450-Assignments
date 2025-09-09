@@ -69,18 +69,26 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 		// Step 2: a. paused dt = 0
 		if (dt == 0) return 0;
+		
+		a3f64 t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
+		a3f64 t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
 
-		if ((clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec) > 0) {
-			// FOR STOPPING - interpolated keyframe time and clip time == 1 
-			// 
+		if (clipCtrl->clipTime_sec > clipCtrl->clip->duration_sec) {
 			// TRANSITION FLAGS
-			return 0; // will get changed depending on transition flags
+
+			switch (clipCtrl->clip->transitionReverse->flag) {
+				case a3clip_stopFlag:
+					t1 = clipCtrl->clip->durationInv * t1;
+					clipCtrl->clipPool->clip->keyframeDirection = 0;
+					clipCtrl->clipIndex = 0;
+					clipCtrl->keyframeIndex = 0;
+					break;
+				default:
+					break;
+			}
 		}
 
 		a3f64 currentClipt0 = clipt0(clipCtrl, clipCtrl->clip);
-
-		a3f64 t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
-		a3f64 t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
 
 		// moments within the current group of clips
 		a3_Sample* clipArr = clipCtrl->clipPool->sample;
@@ -122,7 +130,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 		// Clip Time in Seconds - t0 * the current keyframe's duration 
 		clipCtrl->keyframeParam = (clipCtrl->clipTime_sec - t0) * clipCtrl->keyframe[clipCtrl->keyframeIndex].durationInv; // Multiplying the inverse instead of dividing
-		clipCtrl->clipParam = clipCtrl->clipTime_sec / clipCtrl->clip->duration_sec;
+		clipCtrl->clipParam = clipCtrl->clipTime_sec * clipCtrl->clip->durationInv;
  
 
 //-----------------------------------------------------------------------------
