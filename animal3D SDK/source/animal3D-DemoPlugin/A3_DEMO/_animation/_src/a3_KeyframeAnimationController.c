@@ -26,6 +26,9 @@
 
 #include <string.h>
 
+// Added for absolute valueing the playback speed
+#include <math.h> 
+
 // Added for debugging printf - Jerry
 #include <stdio.h>
 
@@ -48,13 +51,6 @@ a3i32 a3clipControllerInit(a3_ClipController* clipCtrl_out, const a3byte ctrlNam
 	return -1;
 }
 
-a3f64 clipt0(a3_ClipController* clipCtrl, const a3_Clip* clip)
-{
-	a3_Keyframe clipFirstKeyFrame = clipCtrl->clipPool->keyframe[clip->keyframeIndex_first];
-	a3f64 clipt0 = clipCtrl->clipPool->sample[clipFirstKeyFrame.sampleIndex0].time_sec;
-	return clipt0;
-}
-
 // update clip controller
 a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 {
@@ -72,6 +68,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		// Step 2: a. paused dt = 0
 		if (dt == 0) return 0;
 		
+		// Creating variables for t0 and t1 to simplify having to type out all this every time
 		a3f64 t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 		a3f64 t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
 
@@ -80,30 +77,56 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			// TRANSITION FLAGS
 
 			// Jerry and Austin
-			switch (clipCtrl->clip->transitionReverse->flag) { 
-				case a3clip_stopFlag:
-					clipCtrl->clipPool->clip->keyframeDirection = 0;
-					clipCtrl->keyframeParam = 1;
-					clipCtrl->clipParam = 1;
-					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeIndex_final;
-					return 0;
-				case a3clip_reverseFlag:
-					clipCtrl->playback_sec = -1;
-					return 0;
-				case a3clip_playFlag:
-					//Austin
-					clipCtrl->keyframeIndex = 0;
-					//adds remaining time onto the new clip
-					clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
-					t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
-					t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
-					break;
-				default:
-					break;
+			switch (clipCtrl->clip->transitionForward->flag) {
+			case a3clip_stopFlag:
+				// stop at end
+				// Setting the direction to 0 and setting the clip and keytime interpolation to 1 
+				clipCtrl->clipPool->clip->keyframeDirection = 0;
+				clipCtrl->keyframeParam = 1;
+				clipCtrl->clipParam = 1;
+				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeIndex_final;
+				return 0;
+			case a3clip_playFlag:
+				// @TODO - Loop or repeat at end if playing forward
+
+				clipCtrl->keyframeIndex = 0;
+				//adds remaining time onto the new clip
+				clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
+				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
+				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
+				break;
+			case a3clip_reverseFlag:
+				// flip playback direction
+				// @TODO do we want this to be a absolute value?
+				clipCtrl->playback_sec *= -1;
+				return 0;
+			}
+
+			switch (clipCtrl->clip->transitionReverse->flag) {
+			case a3clip_stopFlag:
+				// stop at beginning
+				clipCtrl->clipPool->clip->keyframeDirection = 0;
+				clipCtrl->keyframeParam = 1;
+				clipCtrl->clipParam = 1;
+				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeIndex_first;
+				return 0;
+			case a3clip_playFlag:
+				// @TODO - Loop or repeat at beginning if playing reverse
+
+				clipCtrl->keyframeIndex = 0;
+				//adds remaining time onto the new clip
+				clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
+				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
+				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
+
+				break;
+			case a3clip_reverseFlag:
+				clipCtrl->playback_sec *= -1;
+				return 0;
 			}
 		}
 
-		a3f64 currentClipt0 = clipt0(clipCtrl, clipCtrl->clip);
+		// hastebin with code that we're re-implementing https://hastebin.com/share/mifejureke.rust
 
 		// moments within the current group of clips
 		a3_Sample* clipArr = clipCtrl->clipPool->sample;
@@ -141,14 +164,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				break;
 			}
 		}
-
-		//Step 2: Resolve keyframe 
-				//	ii. step(s) taken
-				//  iii: clip exited
-			// c. reverse: dt < 0
-				//  i. stop
-				//  ii. step(s) taken
-				//  iii. clip exited
 	 
 		// 3. Normalized keyframe/clip: relative time / duration. Worked on primarily by Jerry (everyone was present in Joyce 101)
 
