@@ -112,9 +112,10 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				return 0;
 			case a3clip_playFlag:
 				// @TODO - Loop or repeat at beginning if playing reverse
-
-				clipCtrl->keyframeIndex = 0;
+				//NEW
+				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount;
 				//adds remaining time onto the new clip
+				//NEW- 0 is replaced by - addditional time backwards
 				clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
