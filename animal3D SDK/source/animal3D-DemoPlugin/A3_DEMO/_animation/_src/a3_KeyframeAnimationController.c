@@ -72,10 +72,8 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		a3f64 t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 		a3f64 t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
 
-		// Checking if clip time is greater than clip duration (overstep)
-		if (clipCtrl->clipTime_sec > clipCtrl->clip->duration_sec) {
-			// TRANSITION FLAGS
-
+		// If the clip time is at the start
+		if (clipCtrl->clipTime_sec == 0) {
 			// Jerry and Austin
 			switch (clipCtrl->clip->transitionForward->flag) {
 			case a3clip_stopFlag:
@@ -94,13 +92,18 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
-				break;
+				return 0;
 			case a3clip_reverseFlag:
 				// flip playback direction
 				// @TODO do we want this to be a absolute value?
 				clipCtrl->playback_sec *= -1;
 				return 0;
 			}
+		}
+
+		// Checking if clip time is greater than clip duration (overstep)
+		if (clipCtrl->clipTime_sec > clipCtrl->clip->duration_sec) {
+			// TRANSITION FLAGS
 
 			switch (clipCtrl->clip->transitionReverse->flag) {
 			case a3clip_stopFlag:
@@ -112,22 +115,18 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				return 0;
 			case a3clip_playFlag:
 				// @TODO - Loop or repeat at beginning if playing reverse
-				//NEW
 				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount;
 				//adds remaining time onto the new clip
 				//NEW- 0 is replaced by - addditional time backwards
-				clipCtrl->clipTime_sec = 0 + (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
+				clipCtrl->clipTime_sec = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec - (clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec);
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				t1 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex1].time_sec;
-
-				break;
+				return 0;
 			case a3clip_reverseFlag:
 				clipCtrl->playback_sec *= -1;
 				return 0;
 			}
 		}
-
-		// hastebin with code that we're re-implementing https://hastebin.com/share/mifejureke.rust
 
 		// moments within the current group of clips
 		a3_Sample* clipArr = clipCtrl->clipPool->sample;
@@ -153,13 +152,16 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			// Austin
 			else
 			{
-				// Austin - Jerry is disappointed in him.
-				if (clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec == 0) {
+				// Austin 
+				// Jerry spent way too long trying to find why this is needed when we have the transitions 
+				// If clip t0 is equal to  0, reset playback sec
+				if (t0 == 0) {
 					clipCtrl->playback_sec = 1;
 					break;
 				}
 
 				// Jerry and Austin
+				// Decreases keyframe and resets t0
 				clipCtrl->keyframeIndex--;
 				t0 = clipCtrl->clipPool->sample[clipCtrl->keyframe[clipCtrl->keyframeIndex].sampleIndex0].time_sec;
 				break;
