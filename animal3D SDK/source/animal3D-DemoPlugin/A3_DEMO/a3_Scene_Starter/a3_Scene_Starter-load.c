@@ -138,6 +138,11 @@ void a3starter_load(a3_DemoState const* demoState, a3_Scene_Starter* scene)
 	currentSceneObject->scaleMode = 0;
 	a3real3Set(currentSceneObject->position.v, +0.5f * sceneObjectDistance, -0.866f * sceneObjectDistance, sceneObjectHeight);
 
+	// Sierra Start 
+	currentSceneObject = scene->obj_apple;
+	currentSceneObject->scaleMode = 0;
+	a3real3Set(currentSceneObject->position.v, +0.5f * sceneObjectDistance, -0.866f * sceneObjectDistance, sceneObjectHeight);
+	// Sierra End
 
 	// set up cameras
 	projector = scene->proj_camera_main;

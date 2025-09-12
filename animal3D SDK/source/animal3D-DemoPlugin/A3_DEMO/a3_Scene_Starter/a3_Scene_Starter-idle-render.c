@@ -198,6 +198,9 @@ void a3starter_render(a3_DemoState const* demoState, a3_Scene_Starter const* sce
 		demoState->draw_unit_capsule,
 		demoState->draw_unit_torus,
 		demoState->draw_teapot,
+		// Sierra Start
+		demoState->draw_apple,
+		// Sierra End
 	};
 
 	// temp texture pointers
@@ -420,6 +423,25 @@ void a3starter_render(a3_DemoState const* demoState, a3_Scene_Starter const* sce
 			a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &j);
 			a3vertexDrawableActivateAndRender(currentDrawable);
 		}
+		// Sierra Start
+		currentSceneObject = scene->obj_apple;
+		j = (a3ui32)(currentSceneObject - scene->object_scene);
+		{
+			// send data and draw
+			i = (j * 2 + 11) % hueCount;
+			currentDrawable = demoState->draw_apple_morph;
+			a3textureActivate(texture_dm[j], a3tex_unit00);
+			a3textureActivate(texture_dm[j], a3tex_unit01);
+			a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+			a3scene_quickInvertTranspose_internal(modelViewMat.m);
+			modelViewMat.v3 = a3vec4_zero;
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, rgba4[i].v);
+			a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &j);
+			a3vertexDrawableActivateAndRender(currentDrawable);
+		}
+		// Sierra End
 
 	}	break;
 		// end forward scene pass
@@ -627,6 +649,22 @@ void a3starter_render(a3_DemoState const* demoState, a3_Scene_Starter const* sce
 					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
 					a3vertexDrawableActivateAndRender(currentDrawable);
 				}
+				// Sierra Start
+				currentSceneObject = scene->obj_apple;
+				j = (a3ui32)(currentSceneObject - scene->object_scene);
+				{
+					i = (j * 2 + 23) % hueCount;
+					currentDrawable = demoState->draw_apple_morph;
+					a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+					a3scene_quickInvertTranspose_internal(modelViewMat.m);
+					modelViewMat.v3 = a3vec4_zero;
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uAtlas, 1, a3mat4_identity.mm);
+					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
+					a3vertexDrawableActivateAndRender(currentDrawable);
+				}
+				// Sierra End
 			}
 
 			// display color target with scene overlays
@@ -673,6 +711,13 @@ void a3starter_render(a3_DemoState const* demoState, a3_Scene_Starter const* sce
 				currentSceneObject <= endSceneObject;
 				++j, ++currentSceneObject)
 				a3scene_drawModelSimple(modelViewProjectionMat.m, viewProjectionMat.m, currentSceneObject->modelMat.m, currentDemoProgram);
+			// Sierra Start
+			for (currentSceneObject = scene->obj_plane, endSceneObject = scene->obj_apple,
+				j = (a3ui32)(currentSceneObject - scene->object_scene);
+				currentSceneObject <= endSceneObject;
+				++j, ++currentSceneObject)
+				a3scene_drawModelSimple(modelViewProjectionMat.m, viewProjectionMat.m, currentSceneObject->modelMat.m, currentDemoProgram);
+			// Sierra End
 		}
 	}
 }

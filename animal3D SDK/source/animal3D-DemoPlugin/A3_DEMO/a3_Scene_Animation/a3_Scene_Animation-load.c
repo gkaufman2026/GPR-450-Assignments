@@ -110,6 +110,9 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		a3hierarchySetNode(scene->sceneGraph,  2, 0, "scene_light_main");
 		a3hierarchySetNode(scene->sceneGraph,  3, 0, "scene_skybox");
 		a3hierarchySetNode(scene->sceneGraph,  4, 0, "scene_teapot");
+		// Sierra Start
+		a3hierarchySetNode(scene->sceneGraph,  5, 0, "scene_apple");
+		// Sierra End
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD SCENE GRAPH NODES
@@ -155,6 +158,9 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 	scene->obj_light_main->sceneGraphIndex = a3hierarchyGetNodeIndex(scene->sceneGraph, "scene_light_main");
 	scene->obj_skybox->sceneGraphIndex = a3hierarchyGetNodeIndex(scene->sceneGraph, "scene_skybox");
 	scene->obj_teapot->sceneGraphIndex = a3hierarchyGetNodeIndex(scene->sceneGraph, "scene_teapot");
+	// Sierra Start
+	scene->obj_apple->sceneGraphIndex = a3hierarchyGetNodeIndex(scene->sceneGraph, "scene_apple");
+	// Sierra End
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD NODES
 //-----------------------------------------------------------------------------
@@ -224,7 +230,38 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 
 		j = a3clipGetIndexInPool(scene->clipPool, "teapot_morph");
 		a3clipControllerInit(scene->clipCtrl_morph, "teapot_ctrl_morph", scene->clipPool, j, rate_additional, fps_additional);
+
 		scene->morph_time = 0.0;
+	}
+	{
+		// Sierra Start
+		a3ui32 const rate_additional = 30;
+		a3f64 const fps_additional = (a3f64)rate_additional;
+		a3ui32 const additionalSampleStart = hierarchySampleCount;
+		a3ui32 const additionalKeyframeStart = hierarchyKeyframeCount;
+		a3ui32 const additionalClipStart = hierarchyClipCount;
+
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 0], 0, fps_additional);//0.0s
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 1], 30, fps_additional);//0.5s
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 2], 70, fps_additional);//2.5s
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 3], 115, fps_additional);//3.5s
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 4], 120, fps_additional);//4.0s
+		a3sampleInit(&scene->clipPool->sample[additionalSampleStart + 5], 200, fps_additional);//5.0s
+		for (j = 0; j < additionalKeyframeCount; ++j)
+			a3keyframeInit(&scene->clipPool->keyframe[additionalKeyframeStart + j],
+				&scene->clipPool->sample[additionalSampleStart + j], &scene->clipPool->sample[additionalSampleStart + j + 1], fps_additional);
+
+		j = additionalClipStart;
+		a3clipInit(&scene->clipPool->clip[j], "apple_morph",
+			&scene->clipPool->keyframe[additionalKeyframeStart + 0],
+			&scene->clipPool->keyframe[additionalKeyframeStart + 4]);
+		a3clipCalculateDuration(scene->clipPool, j, fps_additional);
+
+		j = a3clipGetIndexInPool(scene->clipPool, "apple_morph");
+		a3clipControllerInit(scene->clipCtrl_morph, "apple_ctrl_morph", scene->clipPool, j, rate_additional, fps_additional);
+
+		scene->morph_time = 0.0;
+		//Sierra End
 	}
 	
 //-----------------------------------------------------------------------------
@@ -262,6 +299,11 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 	scene->obj_teapot->scale.x = a3real_half;
 	scene->obj_teapot->scaleMode = 1;
 
+	// Sierra Start
+	scene->obj_apple->position.y = -a3real_one;
+	scene->obj_apple->scale.x = a3real_half;
+	scene->obj_apple->scaleMode = 1;
+	// Sierra End
 
 	// effectors
 	// do one update to get first pose for target IK frame

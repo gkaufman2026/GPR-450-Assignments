@@ -91,6 +91,9 @@ void a3animation_update_animation_other(
 
 	scene->morph_time = (a3f64)sampleIndex0 + keyframeParam;
 	scene->obj_teapot->euler.z = a3trigValid_sind((a3real)keyframeParam * a3real_threesixty);
+	// Sierra Start
+	scene->obj_apple->euler.z = a3trigValid_sind((a3real)keyframeParam * a3real_threesixty);
+	// Sierra End
 }
 
 void a3animation_update_animation(

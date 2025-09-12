@@ -134,7 +134,10 @@ extern "C"
 					obj_capsule[1],
 					obj_torus[1];
 				a3_SceneObject
-					obj_teapot[1];
+					obj_teapot[1],
+				// Sierra Start
+					obj_apple[1];
+				// Sierra End
 			};
 		};
 		union {

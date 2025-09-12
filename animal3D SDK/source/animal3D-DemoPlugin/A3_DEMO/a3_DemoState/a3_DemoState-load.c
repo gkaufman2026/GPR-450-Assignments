@@ -236,13 +236,16 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 		// create new data
 		a3_ProceduralGeometryDescriptor displayShapes[7] = { a3geomShape_none };
 		a3_ProceduralGeometryDescriptor proceduralShapes[7] = { a3geomShape_none };
-		const a3_DemoStateLoadedModel loadedShapes[3] = {
+		const a3_DemoStateLoadedModel loadedShapes[4] = {
 			{ A3_DEMO_OBJ"teapot/teapot.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+			// Sierra Start
+			{ A3_DEMO_OBJ"apple/apple.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+			// Sierra End
 			//{ A3_DEMO_OBJ"egnaro/egnaro_mesh.obj", A3_DEMO_OBJ"egnaro/egnaro_skin.xml", a3mat4_identity.mm, a3model_calculateVertexTangents },
 			{ A3_DEMO_OBJ"xbot/xbot_surface.obj", A3_DEMO_OBJ"xbot/xbot_surface.xml", scale1x_z2y.mm, a3model_calculateVertexTangents },
 			{ A3_DEMO_OBJ"xbot/xbot_joints.obj", A3_DEMO_OBJ"xbot/xbot_joints.xml", scale1x_z2y.mm, a3model_calculateVertexTangents },
 		};
-		const a3_DemoStateLoadedModel morphShapes[1][5] = {
+		const a3_DemoStateLoadedModel morphShapes[2][5] = {
 			{
 				{ A3_DEMO_OBJ"teapot/morph/teapot_base.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
 				{ A3_DEMO_OBJ"teapot/morph/teapot_scale.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
@@ -250,7 +253,18 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 				{ A3_DEMO_OBJ"teapot/morph/teapot_scale_y.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
 				{ A3_DEMO_OBJ"teapot/morph/teapot_scale_z.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
 			},
+			// Sierra Start
+			{
+				{ A3_DEMO_OBJ"apple/morph/teapot_base.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+				{ A3_DEMO_OBJ"apple/morph/teapot_scale.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+				{ A3_DEMO_OBJ"apple/morph/teapot_scale_x.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+				{ A3_DEMO_OBJ"apple/morph/teapot_scale_y.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+				{ A3_DEMO_OBJ"apple/morph/teapot_scale_z.obj", 0, downscale20x_y2z_x2y.mm, a3model_calculateVertexTangents },
+			},
+			// Sierra End
 		};
+
+		// Sierra End
 
 		// static scene procedural objects
 		//	(axes, grid)
@@ -467,6 +481,11 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 
 		currentDrawable = demoState->draw_teapot_morph;
 		a3vertexDrawableCreateIndexed(currentDrawable, vao, vbo_ibo, sceneCommonIndexFormat, morphTargetsData[morphModelIndex]->primType, i, morphTargetsData[morphModelIndex]->numIndices);
+
+		// Sierra Start
+		currentDrawable = demoState->draw_apple_morph;
+		a3vertexDrawableCreateIndexed(currentDrawable, vao, vbo_ibo, sceneCommonIndexFormat, morphTargetsData[morphModelIndex]->primType, i, morphTargetsData[morphModelIndex]->numIndices);
+		// Sierra End
 	}
 	
 
@@ -1046,6 +1065,9 @@ void a3demo_loadValidate(a3_DemoState* demoState)
 	a3_refreshDrawable_internal(demoState->draw_unit_torus, currentVAO, currentBuff);
 	a3_refreshDrawable_internal(demoState->draw_unit_cone, currentVAO, currentBuff);
 	a3_refreshDrawable_internal(demoState->draw_teapot, currentVAO, currentBuff);
+	// Sierra Start
+	a3_refreshDrawable_internal(demoState->draw_apple, currentVAO, currentBuff);
+	// Sierra End
 
 	currentVAO = demoState->vao_tangentbasis_texcoord_skin;
 	currentVAO->vertexBuffer = currentBuff;
@@ -1055,6 +1077,9 @@ void a3demo_loadValidate(a3_DemoState* demoState)
 	currentVAO = demoState->vao_tangentbasis_texcoord_morph5;
 	currentVAO->vertexBuffer = currentBuff;
 	a3_refreshDrawable_internal(demoState->draw_teapot_morph, currentVAO, currentBuff);
+	// Sierra Start
+	a3_refreshDrawable_internal(demoState->draw_apple_morph, currentVAO, currentBuff);
+	// Sierra End
 
 	a3demo_initDummyDrawable_internal(demoState);
 }

@@ -113,6 +113,9 @@ extern "C"
 	{
 		animation_ctrl_camera,
 		animation_ctrl_teapot,
+		// Sierra Start
+		animation_ctrl_apple,
+		// Sierra End
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD OBJECTS
@@ -187,11 +190,11 @@ extern "C"
 //-----------------------------------------------------------------------------
 
 		// other animation controllers
-		a3_ClipController clipCtrl_morph[1];
+		a3_ClipController clipCtrl_morph[2];
 		a3f64 morph_time;
 
 		// complete clip/keyframe/sample collection
-		a3_ClipPool clipPool[1];
+		a3_ClipPool clipPool[2];
 		
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD MORE HIERARCHY STATES
@@ -230,6 +233,10 @@ extern "C"
 					obj_skybox[1];
 				a3_SceneObject
 					obj_teapot[1];
+				// Sierra Start
+				a3_SceneObject
+					obj_apple[1];
+				// Sierra End
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD OBJECTS

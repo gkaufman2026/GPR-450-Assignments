@@ -101,6 +101,7 @@ void a3animation_render_controls(a3_DemoState const* demoState, a3_Scene_Animati
 	a3byte const* ctrlTargetName[animation_ctrlmode_max] = {
 		"CAMERA",
 		"TEAPOT",
+		"APPLE",
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD OBJECTS
@@ -236,6 +237,9 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 		demoState->draw_node,
 		demoState->draw_unit_box,		// skybox
 		demoState->draw_node,			// teapot
+		// Sierra Start
+		demoState->draw_node,			// apple
+		// Sierra End
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD SHORTCUTS
@@ -265,6 +269,9 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 		0,
 		demoState->tex_checker,			// skybox
 		demoState->tex_checker,			// teapot
+		// Sierra Start
+		demoState->tex_checker,			// apple
+		// Sierra End
 		
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD SHORTCUTS
@@ -492,6 +499,40 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 			a3vertexDrawableActivateAndRender(currentDrawable);
 		}
 
+		// Sierra Start
+		currentSceneObject = scene->obj_apple;
+		j = (a3ui32)(currentSceneObject - scene->object_scene);
+		{
+			a3boolean const apple_animate_color = true;
+
+			// send data and draw
+			i = (j * 2 + 11) % hueCount;
+			currentDrawable = demoState->draw_apple_morph;
+			a3textureActivate(texture_dm[j], a3tex_unit00);
+			a3textureActivate(texture_dm[j], a3tex_unit01);
+			a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+			a3scene_quickInvertTranspose_internal(modelViewMat.m);
+			modelViewMat.v3 = a3vec4_zero;
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+			if (apple_animate_color)
+			{
+				a3real4 col_apple;
+				a3ui32 const sampleIndex0 = scene->clipPool->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex0;
+				a3ui32 const sampleIndex1 = scene->clipPool->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex1;
+				a3f64 const keyframeParam = scene->clipCtrl_morph->keyframeParam;
+				a3real4Lerp(col_apple, rgba4[(sampleIndex0 * 4) % hueCount].v, rgba4[(sampleIndex1 * 4) % hueCount].v, (a3real)keyframeParam);
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, col_apple);
+			}
+			else
+			{
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, grey);
+			}
+			a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &j);
+			a3vertexDrawableActivateAndRender(currentDrawable);
+		}
+		// Sierra End
+
 	}	break;
 		// end forward scene pass
 	}
@@ -690,6 +731,22 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
 					a3vertexDrawableActivateAndRender(currentDrawable);
 				}
+				// Sierra Start
+				currentSceneObject = scene->obj_apple;
+				j = (a3ui32)(currentSceneObject - scene->object_scene);
+				{
+					i = (j * 2 + 23) % hueCount;
+					currentDrawable = demoState->draw_apple_morph;
+					a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+					a3scene_quickInvertTranspose_internal(modelViewMat.m);
+					modelViewMat.v3 = a3vec4_zero;
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uAtlas, 1, a3mat4_identity.mm);
+					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
+					a3vertexDrawableActivateAndRender(currentDrawable);
+				}
+				// Sierra End
 			}
 
 			// display color target with scene overlays
@@ -766,6 +823,16 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 				modelMat = scene->sceneGraphState->objectSpace->hpose_base[currentSceneObject->sceneGraphIndex].transformMat;
 				a3scene_drawModelSimple(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m, currentDemoProgram);
 			}
+			// Sierra Start
+			for (currentSceneObject = scene->obj_apple, endSceneObject = scene->obj_apple;
+				currentSceneObject <= endSceneObject;
+				++currentSceneObject)
+			{
+				j = (a3ui32)(currentSceneObject - scene->object_scene);
+				modelMat = scene->sceneGraphState->objectSpace->hpose_base[currentSceneObject->sceneGraphIndex].transformMat;
+				a3scene_drawModelSimple(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m, currentDemoProgram);
+			}
+			// Sierra End
 		}
 	}
 }

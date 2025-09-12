@@ -133,6 +133,12 @@ void a3animation_input(a3_DemoState* demoState, a3_Scene_Animation* scene, a3f64
 		sceneObject = scene->obj_teapot;
 		a3demo_input_controlObject(demoState, sceneObject, dt, a3real_one, a3real_zero);
 		break;
+	// Sierra Start
+	case animation_ctrl_apple:
+		sceneObject = scene->obj_apple;
+		a3demo_input_controlObject(demoState, sceneObject, dt, a3real_one, a3real_zero);
+		break;
+	// Sierra End
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD OBJECTS
