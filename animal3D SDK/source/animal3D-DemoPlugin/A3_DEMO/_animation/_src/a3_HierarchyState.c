@@ -226,7 +226,7 @@ a3i32 a3hierarchyStateUpdateLocalInverse(const a3_HierarchyState* state)
 	{
 		a3index i = 0;
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME - DONE IN CLASS
 //-----------------------------------------------------------------------------
 		
 		for (i = 0; i < state->hierarchy->numNodes; i++) {
@@ -249,7 +249,7 @@ a3i32 a3hierarchyStateUpdateObjectInverse(const a3_HierarchyState* state)
 	{
 		a3index i = 0;
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME 
 //-----------------------------------------------------------------------------
 		
 

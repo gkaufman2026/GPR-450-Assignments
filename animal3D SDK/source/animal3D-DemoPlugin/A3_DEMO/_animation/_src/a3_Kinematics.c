@@ -31,7 +31,7 @@
 static inline void a3kinematicsSolveForwardSingle(const a3_HierarchyState* hierarchyState, const a3ui32 index, const a3ui32 parentIndex)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 
 	// 4x4 matrix multiplication
@@ -47,7 +47,7 @@ static inline void a3kinematicsSolveForwardSingle(const a3_HierarchyState* hiera
 static inline void a3kinematicsSolveForwardRoot(const a3_HierarchyState* hierarchyState, const a3ui32 index)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 
 	hierarchyState->objectSpace->hpose_base[index].transformMat = hierarchyState->localSpace->hpose_base[index].transformMat;
@@ -70,7 +70,7 @@ a3i32 a3kinematicsSolveForwardPartial(const a3_HierarchyState* hierarchyState, c
 		//		- else
 		//			- copy local matrix to object matrix
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 
 		a3ui32 i;
@@ -160,10 +160,24 @@ void a3kinematicsUpdateHierarchyStateFK(a3_HierarchyState* activeHS,
 		//	-> convert poses to local-space matrices
 		//	-> perform recursive FK
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 
+		a3hierarchyPoseConcat(
+			activeHS->localSpace, // GOAL: Local pose = total of base and delta time
+			activeHS->animPose, // delta pose (from clip controller interp)
+			baseHS->localSpace, // precomputed base pose
+			activeHS->hierarchy->numNodes
+		);
+		a3hierarchyPoseConvert(
+			activeHS->localSpace, // Goal: Convert local pose description to matrix
+			activeHS->hierarchy->numNodes, 
+			poseGroup->channel,
+			poseGroup->order
+		);
 
+		// Finally do FK algorithm
+		a3kinematicsSolveForward(activeHS);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2

@@ -36,7 +36,26 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		
+		// YOU WANT TO DO THIS PROPERLY
+		// -> Pose order is given by order param
+		// 
+		// -> Form a single matrix for each channel 
+		// -> Concat (matrix multiplication) them in the correct order (r to l)
+		//		-> v' = t + R * S * v 
+		//		Scale
+		//		Rotate 
+		//		Translate
 
+		// TEMP (for testing) dont keep this here
+
+		a3real4x4SetRotateZYX(spatialPose->transformMat.m, 
+			a3trigValid_sind(spatialPose->rotate.x), 
+			a3trigValid_sind(spatialPose->rotate.y), 
+			a3trigValid_sind(spatialPose->rotate.z)
+		);
+
+		// this part can stay
+		a3real3Add(spatialPose->transformMat.m[3], spatialPose->translate.v);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -83,7 +102,14 @@ a3i32 a3spatialPoseConcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPose*
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		
+		// Add the two pose channels together
+		a3real4Sum(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
+		a3real4Sum(spatialPose_out->translate.v, spatialPose_lhs->translate.v, spatialPose_rhs->translate.v);
+		a3real4ProductComp(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
 
+		// DO THIS EVERYWHERE IN FILE:
+		// make sure rot angles are within [-360, 360]
+		//a3trigValid_sind()
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -98,10 +124,18 @@ a3i32 a3spatialPoseDeconcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPos
 	if (spatialPose_out && spatialPose_lhs && spatialPose_rhs)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 		
+		// Subtract the two pose channels from one another together
+		a3real4Diff(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
+		a3real4Diff(spatialPose_out->translate.v, spatialPose_lhs->translate.v, spatialPose_rhs->translate.v);
+		//a3real4Sum(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
+		a3real4QuotientComp(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
 
+		// DO THIS EVERYWHERE IN FILE:
+		// make sure rot angles are within [-360, 360]
+		//a3trigValid_sind()
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -116,10 +150,16 @@ a3i32 a3spatialPoseLerp(a3_SpatialPose* spatialPose_out, const a3_SpatialPose* s
 	if (spatialPose_out && spatialPose_0 && spatialPose_1)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
 //-----------------------------------------------------------------------------
 		
+		a3real4Lerp(spatialPose_out->rotate.v, spatialPose_0->rotate.v, spatialPose_1->rotate.v, u);
+		a3real4Lerp(spatialPose_out->translate.v, spatialPose_0->translate.v, spatialPose_1->translate.v, u);
+		a3real4Lerp(spatialPose_out->scale.v, spatialPose_0->scale.v, spatialPose_1->scale.v, u);
 
+		// DO THIS EVERYWHERE IN FILE:
+		// make sure rot angles are within [-360, 360]
+		//a3trigValid_sind()
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
