@@ -31,7 +31,7 @@
 static inline void a3kinematicsSolveForwardSingle(const a3_HierarchyState* hierarchyState, const a3ui32 index, const a3ui32 parentIndex)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 
 	// 4x4 matrix multiplication
@@ -47,7 +47,7 @@ static inline void a3kinematicsSolveForwardSingle(const a3_HierarchyState* hiera
 static inline void a3kinematicsSolveForwardRoot(const a3_HierarchyState* hierarchyState, const a3ui32 index)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 
 	hierarchyState->objectSpace->hpose_base[index].transformMat = hierarchyState->localSpace->hpose_base[index].transformMat;
@@ -70,7 +70,7 @@ a3i32 a3kinematicsSolveForwardPartial(const a3_HierarchyState* hierarchyState, c
 		//		- else
 		//			- copy local matrix to object matrix
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 
 		a3ui32 i;
@@ -160,7 +160,7 @@ void a3kinematicsUpdateHierarchyStateFK(a3_HierarchyState* activeHS,
 		//	-> convert poses to local-space matrices
 		//	-> perform recursive FK
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 
 		a3hierarchyPoseConcat(
@@ -219,8 +219,6 @@ void a3kinematicsUpdateHierarchyStateSkin(a3_HierarchyState* activeHS,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
-
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2

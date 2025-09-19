@@ -99,7 +99,7 @@ a3i32 a3spatialPoseConcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPose*
 	if (spatialPose_out && spatialPose_lhs && spatialPose_rhs)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 		
 		// Add the two pose channels together
@@ -110,6 +110,9 @@ a3i32 a3spatialPoseConcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPose*
 		// DO THIS EVERYWHERE IN FILE:
 		// make sure rot angles are within [-360, 360]
 		//a3trigValid_sind()
+		a3trigValid_sind(spatialPose_out->rotate.x);
+		a3trigValid_sind(spatialPose_out->rotate.y);
+		a3trigValid_sind(spatialPose_out->rotate.z);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -124,18 +127,21 @@ a3i32 a3spatialPoseDeconcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPos
 	if (spatialPose_out && spatialPose_lhs && spatialPose_rhs)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 		
 		// Subtract the two pose channels from one another together
 		a3real4Diff(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
 		a3real4Diff(spatialPose_out->translate.v, spatialPose_lhs->translate.v, spatialPose_rhs->translate.v);
-		//a3real4Sum(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
+
 		a3real4QuotientComp(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
 
 		// DO THIS EVERYWHERE IN FILE:
 		// make sure rot angles are within [-360, 360]
 		//a3trigValid_sind()
+		a3trigValid_sind(spatialPose_out->rotate.x);
+		a3trigValid_sind(spatialPose_out->rotate.y);
+		a3trigValid_sind(spatialPose_out->rotate.z);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -150,7 +156,7 @@ a3i32 a3spatialPoseLerp(a3_SpatialPose* spatialPose_out, const a3_SpatialPose* s
 	if (spatialPose_out && spatialPose_0 && spatialPose_1)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME DONE IN CLASS
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 		
 		a3real4Lerp(spatialPose_out->rotate.v, spatialPose_0->rotate.v, spatialPose_1->rotate.v, u);
@@ -160,6 +166,9 @@ a3i32 a3spatialPoseLerp(a3_SpatialPose* spatialPose_out, const a3_SpatialPose* s
 		// DO THIS EVERYWHERE IN FILE:
 		// make sure rot angles are within [-360, 360]
 		//a3trigValid_sind()
+		a3trigValid_sind(spatialPose_out->rotate.x);
+		a3trigValid_sind(spatialPose_out->rotate.y);
+		a3trigValid_sind(spatialPose_out->rotate.z);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
