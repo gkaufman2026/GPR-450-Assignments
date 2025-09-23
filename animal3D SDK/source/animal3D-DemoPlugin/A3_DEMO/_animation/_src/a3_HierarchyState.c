@@ -300,8 +300,35 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		
+		//Austin
+		//makes filestream and sets to reading
+		a3_FileStream fileStream[1] = { 0 };
+		a3fileStreamOpenRead(fileStream, resourceFilePath);
 
+		FILE *fp;
+		fp = fileStream->stream;
 
+		//keysmash to store data
+		a3byte *d = "awrfwef";
+
+		//TESTING
+		if (fileStream)
+		{
+			if (fp)
+			{
+				//reads first line (up to 100 chars) and stores in d (the keysmash var rn).
+				//we just needa make this but automatic instead of manual setup (see a3sceneanimationload)
+				//use the debug menu to see the value for d Jerry :p
+				(a3byte)fgets(d, 100, fp);
+				(a3byte)fgets(d, 100, fp);
+				(a3byte)fgets(d, 100, fp);
+				(a3byte)fgets(d, 100, fp);
+				(a3byte)fgets(d, 100, fp);
+
+			}
+		}
+
+		
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------
@@ -318,7 +345,7 @@ a3i32 a3hierarchyPoseGroupLoadBVH(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+		
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
