@@ -329,12 +329,12 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 		// Create hierarchy based on the anount of numSegments found in htr
 		else if (strstr(key, "NumSegments")) {
 			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), 0);
+			a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
-			//a3hierarchyPoseGroupCreate(poseGroup_oi ut, hierarchy_out, atoi(value));
+			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
 		// Need to implement DataFrameRate
 		else if (strstr(key, "DataFrameRate")) {
@@ -380,13 +380,18 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 	a3vec3 pos, rot;
 	float scale;
 
-	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
 		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
+		printf("%s\n", key);
+		a3f32 posX = pos.x;
+		printf("%f, %f, %f", pos.x, pos.y, pos.z);
+		printf("\n%f, %f, %f", rot.x, rot.y, rot.z);
+		printf("\n%f", scale);
 		int node = a3hierarchyGetNodeIndex(hierarchy_out, key);
 
-		a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
-		a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
-		a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
+		//a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
+		//a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
+		//a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
 		poseGroup_out->hpose[0].hpose_index = node;	
 	}
 
