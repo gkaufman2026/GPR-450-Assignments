@@ -288,42 +288,56 @@ a3i32 a3hierarchyStateUpdateObjectBindToCurrent(const a3_HierarchyState* state, 
 	return -1;
 }
 
-a3boolean parseHeaderSection(a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+int parseKeyValue(FILE* file, char* key, char* value) {
+	char currentLine[256];
+	if (fgets(currentLine, sizeof(currentLine), file) != NULL) {
+		// Checks if currentLine has any "\n" inside of it and removes it from currentLine
+		currentLine[strcspn(currentLine, "\n")] = 0;
+
+		// Checks if its a new section
+		if (currentLine[0] == '[') {
+			return 0;
+		}
+
+		if (sscanf(currentLine, "%s %s", key, value) == 2) {
+			return 1;
+		}
+		return 0;
+	}
+	return 0;
+}
+
+a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_HierarchyPoseGroup * poseGroup_out) {
 	char key[100];
 	char value[100];
 
-	// Need to initalize the arrays and 'break' function if not HTR
-	if (strstr(key, "FileType") && !strstr(value, "HTR")) {
-		return false;
-	}
-
-	// Check if DataType, FileVersion are needed, as I assume they're data unrelated to what we're doing
-	else if (strstr(key, "DataType")) {
-		if (strstr(value, "HTRS")) return false;
-	} 
-	else if (strstr(key, "FileVersion")) {
-		if (atoi(value) != 1) return false;
-	}
-
-	// Create hierarchy based on the anount of numSegments found in htr
-	else if (strstr(key, "NumSegments")) {
-		a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
-	} 
-	// Initalize pose group based on the anount of numSegments found in htr
-	else if (strstr(key, "NumFrames")) {
-		a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
-	}
-
-	// Need to implement DataFrameRate
-	else if (strstr(key, "DataFrameRate")) {
-		// Not the right function
-		//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
-	} 
-	else if (strstr(key, "EulerRotationOrder")) {
-		/*switch (switch_on) {
-		default:
-			break;
-		}*/
+	while (parseKeyValue(animData, key, value)) {
+		if (strcmp(key, "FileType") == 0) {
+			if (!strcmp(value, "HTR")) return false;
+		} else if (strcmp(key, "DataType") == 0) {
+			printf("Apple: %s", value);
+			if (strcmp(value, "HTRS") != 0) return false;
+		} else if (strcmp(key, "FileVersion") == 0) {
+			if (atoi(value) != 1) return false;
+		}
+		// Create hierarchy based on the anount of numSegments found in htr
+		else if (strcmp(key, "NumSegments") == 0) {
+			a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
+		// Initalize pose group based on the anount of numSegments found in htr
+		else if (strcmp(key, "NumFrames") == 0) {
+			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+		}
+		// Need to implement DataFrameRate
+		else if (strstr(key, "DataFrameRate")) {
+			// Not the right function
+			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+		} else if (strstr(key, "EulerRotationOrder")) {
+			/*switch (switch_on) {
+			default:
+				break;
+			}*/
+		}
 	}
 
 	return false;
@@ -376,7 +390,11 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 			while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
 				if (strstr(currentLine, "[Header]")) {
 					// header cannot be parsed
-					if (!parseHeaderSection(hierarchy_out, poseGroup_out)) return -1;
+					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
+						printf("Error parsing header section.\n");
+						fclose(animData);
+						return -1;
+					}
 				}
 
 				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
