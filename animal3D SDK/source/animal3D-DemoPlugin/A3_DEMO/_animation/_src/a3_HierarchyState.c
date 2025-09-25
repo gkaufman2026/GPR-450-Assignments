@@ -312,35 +312,66 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 	char value[100];
 
 	while (parseKeyValue(animData, key, value)) {
-		if (strcmp(key, "FileType") == 0) {
-			if (!strcmp(value, "HTR")) return false;
-		} else if (strcmp(key, "DataType") == 0) {
-			printf("Apple: %s", value);
-			if (strcmp(value, "HTRS") != 0) return false;
-		} else if (strcmp(key, "FileVersion") == 0) {
+		// Read the keys to the associated map
+		if (strstr(key, "FileType")) {
+			printf("%s\n", value);
+			if (!strstr(value, "HTR")) return false;
+		} 
+		else if (strstr(key, "DataType")) {
+			printf("%s\n", value);
+			if (!strstr(value, "HTRS")) return false;
+		} 
+		// Convert string to int
+		else if (strstr(key, "FileVersion")) {
+			printf("%s\n", value);
 			if (atoi(value) != 1) return false;
 		}
 		// Create hierarchy based on the anount of numSegments found in htr
-		else if (strcmp(key, "NumSegments") == 0) {
-			a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		else if (strstr(key, "NumSegments")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		// Initalize pose group based on the anount of numSegments found in htr
-		else if (strcmp(key, "NumFrames") == 0) {
-			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+		else if (strstr(key, "NumFrames")) {
+			printf("%s\n", value);
+			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
 		// Need to implement DataFrameRate
 		else if (strstr(key, "DataFrameRate")) {
+			printf("%s\n", value);
 			// Not the right function
 			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
-		} else if (strstr(key, "EulerRotationOrder")) {
+		} 
+		else if (strstr(key, "EulerRotationOrder")) {
+			printf("%s\n", value);
 			/*switch (switch_on) {
 			default:
 				break;
 			}*/
 		}
+		else if (strstr(key, "CalibrationUnits")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
+		else if (strstr(key, "RotationUnits")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
+		else if (strstr(key, "GlobalAxisofGravity")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
+		else if (strstr(key, "BoneLengthAxis")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
+		else if (strstr(key, "ScaleFactor")) {
+			printf("%s\n", value);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+		}
 	}
 
-	return false;
+	return true;
 }
 
 
@@ -391,18 +422,16 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 				if (strstr(currentLine, "[Header]")) {
 					// header cannot be parsed
 					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
-						printf("Error parsing header section.\n");
-						fclose(animData);
 						return -1;
 					}
 				}
 
 				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
-					printf("1");
+					//printf("1");
 				}
 
 				if (strstr(currentLine, "[BasePosition]")) {
-					printf("2");
+					//printf("2");
 				}
 			}
 			// Has completed file
