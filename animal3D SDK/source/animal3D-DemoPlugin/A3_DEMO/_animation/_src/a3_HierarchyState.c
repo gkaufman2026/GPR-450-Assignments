@@ -329,13 +329,13 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 		// Create hierarchy based on the anount of numSegments found in htr
 		else if (strstr(key, "NumSegments")) {
 			printf("%s\n", value);
-			a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
 			printf("%s\n", value);
-			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
 		// Need to implement DataFrameRate
 		else if (strstr(key, "DataFrameRate")) {
@@ -402,13 +402,28 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 		int node = a3hierarchyGetNodeIndex(hierarchy_out, key);
 
 		a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
-		//a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
-		//a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
+		a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
+		a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
 		poseGroup_out->hpose[0].hpose_index = node;	
 	}
 
 	return true;
 }
+
+a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+	char currentLine[256];
+	char s[a3node_nameSize];
+	char h[a3node_nameSize];
+
+	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+		sscanf(currentLine, "%s %s", s, h);
+		printf("%s\n", s);
+		printf("%s", h);
+	}
+
+	return true;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -463,14 +478,16 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 				}
 
 				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
-					//printf("1");
+					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
+						return -1;
+					}
 				}
 
 				if (strstr(currentLine, "[BasePosition]")) {
 					// base pos cannot be parsed
-					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
-						return -1;
-					}
+					//if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
+						//return -1;
+					//}
 				}
 			}
 			// Has completed file
