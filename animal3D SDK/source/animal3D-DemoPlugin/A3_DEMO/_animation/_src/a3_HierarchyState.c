@@ -329,12 +329,12 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 		// Create hierarchy based on the anount of numSegments found in htr
 		else if (strstr(key, "NumSegments")) {
 			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+			//a3hierarchyCreate(hierarchy_out, atoi(value), 0);
 		}
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
-			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+			//a3hierarchyPoseGroupCreate(poseGroup_oi ut, hierarchy_out, atoi(value));
 		}
 		// Need to implement DataFrameRate
 		else if (strstr(key, "DataFrameRate")) {
@@ -369,6 +369,25 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 			printf("%s\n", value);
 			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
+	}
+
+	return true;
+}
+
+a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+	char currentLine[256];
+	char key[a3node_nameSize]; // once we implement the hierarchy and segments it will read the 67 lines
+	a3vec3 pos, rot;
+	float scale;
+
+	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
+		int node = a3hierarchyGetNodeIndex(hierarchy_out, key);
+
+		a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
+		a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
+		a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
+		poseGroup_out->hpose[0].hpose_index = node;	
 	}
 
 	return true;
@@ -431,7 +450,10 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 				}
 
 				if (strstr(currentLine, "[BasePosition]")) {
-					//printf("2");
+					// base pos cannot be parsed
+					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
+						return -1;
+					}
 				}
 			}
 			// Has completed file
@@ -445,7 +467,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------
 	}
-	return -1;
+	return 1;
 }
 
 // load BVH file, read and store complete pose group and hierarchy
