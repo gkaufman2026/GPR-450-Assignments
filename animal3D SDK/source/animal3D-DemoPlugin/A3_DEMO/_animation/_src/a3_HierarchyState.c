@@ -334,6 +334,7 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
+			printf("%s\n", value);
 			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
 		// Need to implement DataFrameRate
@@ -343,21 +344,32 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		} 
 		else if (strstr(key, "EulerRotationOrder")) {
-			printf("%s\n", value);
-			/*switch (switch_on) {
-			default:
+			if (strcmp(value, "a3poseEulerOrder_xyz")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*) a3poseEulerOrder_xyz;
 				break;
-			}*/
+			} else if (strcmp(value, "a3poseEulerOrder_yzx")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_yzx;
+				break;
+			} else if (strcmp(value, "a3poseEulerOrder_zxy")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_zxy;
+				break;
+			} else if (strcmp(value, "a3poseEulerOrder_yxz")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_yxz;
+				break;
+			} else if (strcmp(value, "a3poseEulerOrder_xzy")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_xzy;
+				break;
+			} else if (strcmp(value, "a3poseEulerOrder_zyx")) {
+				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_zyx;
+				break;
+			}
+
 		}
 		else if (strstr(key, "CalibrationUnits")) {
 			printf("%s\n", value);
 			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		else if (strstr(key, "RotationUnits")) {
-			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
-		}
-		else if (strstr(key, "GlobalAxisofGravity")) {
 			printf("%s\n", value);
 			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
@@ -389,7 +401,7 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 		printf("\n%f", scale);
 		int node = a3hierarchyGetNodeIndex(hierarchy_out, key);
 
-		//a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
+		a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
 		//a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
 		//a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
 		poseGroup_out->hpose[0].hpose_index = node;	
