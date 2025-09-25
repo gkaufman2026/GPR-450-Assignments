@@ -288,6 +288,47 @@ a3i32 a3hierarchyStateUpdateObjectBindToCurrent(const a3_HierarchyState* state, 
 	return -1;
 }
 
+a3boolean parseHeaderSection(a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+	char key[100];
+	char value[100];
+
+	// Need to initalize the arrays and 'break' function if not HTR
+	if (strstr(key, "FileType") && !strstr(value, "HTR")) {
+		return false;
+	}
+
+	// Check if DataType, FileVersion are needed, as I assume they're data unrelated to what we're doing
+	else if (strstr(key, "DataType")) {
+		if (strstr(value, "HTRS")) return false;
+	} 
+	else if (strstr(key, "FileVersion")) {
+		if (atoi(value) != 1) return false;
+	}
+
+	// Create hierarchy based on the anount of numSegments found in htr
+	else if (strstr(key, "NumSegments")) {
+		a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+	} 
+	// Initalize pose group based on the anount of numSegments found in htr
+	else if (strstr(key, "NumFrames")) {
+		a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+	}
+
+	// Need to implement DataFrameRate
+	else if (strstr(key, "DataFrameRate")) {
+		// Not the right function
+		//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+	} 
+	else if (strstr(key, "EulerRotationOrder")) {
+		/*switch (switch_on) {
+		default:
+			break;
+		}*/
+	}
+
+	return false;
+}
+
 
 //-----------------------------------------------------------------------------
 
@@ -300,35 +341,59 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		
-		//Austin
-		//makes filestream and sets to reading
-		a3_FileStream fileStream[1] = { 0 };
-		a3fileStreamOpenRead(fileStream, resourceFilePath);
+		////Austin
+		////makes filestream and sets to reading
+		//a3_FileStream fileStream[1] = { 0 };
+		//a3fileStreamOpenRead(fileStream, resourceFilePath);
 
-		FILE *fp;
-		fp = fileStream->stream;
+		//FILE *fp;
+		//fp = fileStream->stream;
 
-		//keysmash to store data
-		a3byte *d = "awrfwef";
+		////keysmash to store data
+		//a3byte *d = "awrfwef";
 
-		//TESTING
-		if (fileStream)
-		{
-			if (fp)
-			{
-				//reads first line (up to 100 chars) and stores in d (the keysmash var rn).
-				//we just needa make this but automatic instead of manual setup (see a3sceneanimationload)
-				//use the debug menu to see the value for d Jerry :p
-				(a3byte)fgets(d, 100, fp);
-				(a3byte)fgets(d, 100, fp);
-				(a3byte)fgets(d, 100, fp);
-				(a3byte)fgets(d, 100, fp);
-				(a3byte)fgets(d, 100, fp);
+		////TESTING
+		//if (fileStream) {
+		//	if (fp) {
+		//		//reads first line (up to 100 chars) and stores in d (the keysmash var rn).
+		//		//we just needa make this but automatic instead of manual setup (see a3sceneanimationload)
+		//		//use the debug menu to see the value for d Jerry :p
+		//		(a3byte)fgets(d, 100, fp);
+		//		(a3byte)fgets(d, 100, fp);
+		//		(a3byte)fgets(d, 100, fp);
+		//		(a3byte)fgets(d, 100, fp);
+		//		(a3byte)fgets(d, 100, fp);
 
+		//	}
+		//}
+
+		// Jerry
+		FILE* animData = fopen(resourceFilePath, "r");
+		char currentLine[100];
+
+		if (animData) {
+			// reads each line until the end of
+			while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+				if (strstr(currentLine, "[Header]")) {
+					// header cannot be parsed
+					if (!parseHeaderSection(hierarchy_out, poseGroup_out)) return -1;
+				}
+
+				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
+					printf("1");
+				}
+
+				if (strstr(currentLine, "[BasePosition]")) {
+					printf("2");
+				}
 			}
+			// Has completed file
+		} else {
+			printf("Cannot find file");
+			return -1;
 		}
 
-		
+		fclose(animData);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------
