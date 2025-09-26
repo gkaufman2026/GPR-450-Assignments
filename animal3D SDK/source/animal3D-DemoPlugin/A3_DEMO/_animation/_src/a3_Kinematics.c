@@ -217,9 +217,11 @@ void a3kinematicsUpdateHierarchyStateSkin(a3_HierarchyState* activeHS,
 		//	-> update object-space inverse matrices
 		//	-> update transform from base to current
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
-		
+		a3hierarchyStateUpdateLocalInverse(activeHS);
+		a3hierarchyStateUpdateObjectInverse(activeHS);
+		a3hierarchyStateUpdateObjectBindToCurrent(activeHS, baseHS);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------

@@ -272,12 +272,13 @@ a3i32 a3hierarchyStateUpdateObjectBindToCurrent(const a3_HierarchyState* state, 
 	{
 		a3index i = 0;
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: DONE
 //-----------------------------------------------------------------------------
 		
 		for (i = 0; i < state->hierarchy->numNodes; i++) {
-			a3real4x4TransformInverse(state_bind->objectSpaceBindToCurrent->hpose_base[i].transformMat.m,
-				state->objectSpace->hpose_base[i].transformMat.m);
+			a3real4x4Product(state->objectSpaceBindToCurrent->hpose_base[i].transformMat.m,
+				state->objectSpace->hpose_base[i].transformMat.m,
+				state_bind->objectSpaceInv->hpose_base[i].transformMat.m);
 		}
 
 //-----------------------------------------------------------------------------
@@ -307,7 +308,7 @@ int parseKeyValue(FILE* file, char* key, char* value) {
 	return 0;
 }
 
-a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_HierarchyPoseGroup * poseGroup_out) {
+a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
 	char key[100];
 	char value[100];
 
@@ -334,50 +335,15 @@ a3boolean parseHeaderSection(FILE * animData, a3_Hierarchy * hierarchy_out, a3_H
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
-			printf("%s\n", value);
 			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
-		// Need to implement DataFrameRate
-		else if (strstr(key, "DataFrameRate")) {
-			printf("%s\n", value);
-			// Not the right function
-			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
-		} 
 		else if (strstr(key, "EulerRotationOrder")) {
-			if (strcmp(value, "a3poseEulerOrder_xyz")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*) a3poseEulerOrder_xyz;
-				break;
-			} else if (strcmp(value, "a3poseEulerOrder_yzx")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_yzx;
-				break;
-			} else if (strcmp(value, "a3poseEulerOrder_zxy")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_zxy;
-				break;
-			} else if (strcmp(value, "a3poseEulerOrder_yxz")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_yxz;
-				break;
-			} else if (strcmp(value, "a3poseEulerOrder_xzy")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_xzy;
-				break;
-			} else if (strcmp(value, "a3poseEulerOrder_zyx")) {
-				poseGroup_out->order = (a3_SpatialPoseEulerOrder*)a3poseEulerOrder_zyx;
-				break;
+			printf("%s\n", value); 
+			if (strstr(value, "ZYX")) {
+				poseGroup_out->order[0] = a3poseEulerOrder_zyx;
 			}
-
-		}
-		else if (strstr(key, "CalibrationUnits")) {
-			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
-		}
-		else if (strstr(key, "RotationUnits")) {
-			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		else if (strstr(key, "BoneLengthAxis")) {
-			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
-		}
-		else if (strstr(key, "ScaleFactor")) {
 			printf("%s\n", value);
 			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
@@ -396,7 +362,7 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 
 	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
 		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
-		printf("%s\n", key);
+		printf("\n%s\n", key);
 		a3f32 posX = pos.x;
 		printf("%f, %f, %f", pos.x, pos.y, pos.z);
 		printf("\n%f, %f, %f", rot.x, rot.y, rot.z);
@@ -437,36 +403,10 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 	if (poseGroup_out && !poseGroup_out->hierarchy && hierarchy_out && !hierarchy_out->nodes && resourceFilePath && *resourceFilePath)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-2: WIP
 //-----------------------------------------------------------------------------
 		
-		////Austin
-		////makes filestream and sets to reading
-		//a3_FileStream fileStream[1] = { 0 };
-		//a3fileStreamOpenRead(fileStream, resourceFilePath);
-
-		//FILE *fp;
-		//fp = fileStream->stream;
-
-		////keysmash to store data
-		//a3byte *d = "awrfwef";
-
-		////TESTING
-		//if (fileStream) {
-		//	if (fp) {
-		//		//reads first line (up to 100 chars) and stores in d (the keysmash var rn).
-		//		//we just needa make this but automatic instead of manual setup (see a3sceneanimationload)
-		//		//use the debug menu to see the value for d Jerry :p
-		//		(a3byte)fgets(d, 100, fp);
-		//		(a3byte)fgets(d, 100, fp);
-		//		(a3byte)fgets(d, 100, fp);
-		//		(a3byte)fgets(d, 100, fp);
-		//		(a3byte)fgets(d, 100, fp);
-
-		//	}
-		//}
 		//Austin
-
 		const a3ui32 jointCount = 32;
 
 		// indices of joints, their parents and branching joints
@@ -503,41 +443,41 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 		poseGroup_out->channel[j] = a3poseChannel_rotate_xyz;
 
 
-		//// Jerry
-		//FILE* animData = fopen(resourceFilePath, "r");
-		//char currentLine[100];
+		// Jerry
+		FILE* animData = fopen(resourceFilePath, "r");
+		char currentLine[100];
 
-		//if (animData) {
-		//	// reads each line until the end of
-		//	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-		//		if (strstr(currentLine, "[Header]")) {
-		//			// header cannot be parsed
-		//			if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
-		//				return -1;
-		//			}
-		//		}
+		if (animData) {
+			// reads each line until the end of
+			while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+				if (strstr(currentLine, "[Header]")) {
+					// header cannot be parsed
+					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
+						return -1;
+					}
+				}
 
-		//		if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
-		//			if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
-		//				return -1;
-		//			}
-		//		}
+				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
+					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
+						return -1;
+					}
+				}
 
-		//		if (strstr(currentLine, "[BasePosition]")) {
-		//			// base pos cannot be parsed
-		//			//if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
-		//				//return -1;
-		//			//}
-		//			parsePositionSection(animData, hierarchy_out, poseGroup_out);
-		//		}
-		//	}
-		//	// Has completed file
-		//} else {
-		//	printf("Cannot find file");
-		//	return -1;
-		//}
+				if (strstr(currentLine, "[BasePosition]")) {
+					// base pos cannot be parsed
+					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
+						return -1;
+					}
+					parsePositionSection(animData, hierarchy_out, poseGroup_out);
+				}
+			}
+			// Has completed file
+		} else {
+			printf("Cannot find file");
+			return -1;
+		}
 
-		//fclose(animData);
+		fclose(animData);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------
