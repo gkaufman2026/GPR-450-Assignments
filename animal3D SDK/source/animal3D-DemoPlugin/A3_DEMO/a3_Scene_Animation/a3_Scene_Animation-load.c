@@ -414,23 +414,64 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		else
 		{
 			hierarchyPoseGroup->hierarchy = 0;
-			if (a3hierarchyPoseGroupLoadHTR(hierarchyPoseGroup, hierarchy,
-				//"../../../../resource/animdata/egnaro/egnaro_skel_anim.htr");
-				"../../../../resource/animdata/xbot/xbot_loco.htr") >= 0)
-			{
-				hierarchy_loaded = hierarchyPoseGroup->hposeCount > 0;
-			}
+			//if (a3hierarchyPoseGroupLoadHTR(hierarchyPoseGroup, hierarchy,
+			//	//"../../../../resource/animdata/egnaro/egnaro_skel_anim.htr");
+			//	"../../../../resource/animdata/xbot/xbot_loco.htr") >= 0)
+			//{
+			//	hierarchy_loaded = hierarchyPoseGroup->hposeCount > 0;
+			//}
+
+			//-------------------------------------------------------------------------------------------------------
+			// first is the hierarchy: the general non-spatial relationship between bones
+			const a3ui32 jointCount = 32;
+
+			// indices of joints, their parents and branching joints
+			a3ui32 jointIndex = 0;
+			a3i32 jointParentIndex = -1;
+			a3i32 rootJointIndex;
+			p = 0;
+			j = 0;
+			// initialize hierarchy
+			hierarchy = scene->hierarchy_skel;
+			a3hierarchyCreate(hierarchy, jointCount, 0);
+
+			// set up joint relationships
+			jointParentIndex = rootJointIndex = a3hierarchySetNode(hierarchy, jointIndex++, jointParentIndex, "skel:root");
+			jointParentIndex = a3hierarchySetNode(hierarchy, jointIndex++, jointParentIndex, "skel:spine_lower");
+			jointParentIndex = a3hierarchySetNode(hierarchy, jointIndex++, jointParentIndex, "skel:spine_mid");
+
+			// allocate poses
+			a3hierarchyPoseGroupCreate(hierarchyPoseGroup, hierarchy, 2);
+
+			// define "bind pose" or "base pose" or the initial transformation
+			//	description for each joint (not a literal transform)
+			p = 0;
+			j = a3hierarchyGetNodeIndex(hierarchy, "skel:root");
+			spatialPose = hierarchyPoseGroup->hpose[p].hpose_base + j;
+			a3spatialPoseSetRotation(spatialPose, 0.0f, -90.0f, -5.0f);
+			a3spatialPoseSetTranslation(spatialPose, 0.0f, -0.1f, +0.1f);
+			a3spatialPoseSetTranslation(spatialPose, 0.0f, 0.0f, +3.6f);
+			hierarchyPoseGroup->channel[j] = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz;
+
+			j = a3hierarchyGetNodeIndex(hierarchy, "skel:spine_lower");
+			spatialPose = hierarchyPoseGroup->hpose[p].hpose_base + j;
+			a3spatialPoseSetRotation(spatialPose, 0.0f, -90.0f, -5.0f);
+			a3spatialPoseSetTranslation(spatialPose, 0.0f, +5.1f, +0.1f);
+			hierarchyPoseGroup->channel[j] = a3poseChannel_rotate_xyz;
+
+			hierarchy_loaded = true;
+			//-------------------------------------------------------------------------------------------------------
 
 			// edit assets as needed
 			// mixamo assets have the wrong base pose; use first key as base and subtract from all
-			p = 1;
+			/*p = 1;
 			a3hierarchyPoseCopy(hierarchyPoseGroup->hpose, hierarchyPoseGroup->hpose + p, hierarchy->numNodes);
 			for (; p < hierarchyPoseGroup->hposeCount; ++p)
 				a3hierarchyPoseDeconcat(hierarchyPoseGroup->hpose + p, hierarchyPoseGroup->hpose + p,
-					hierarchyPoseGroup->hpose, hierarchy->numNodes);
+					hierarchyPoseGroup->hpose, hierarchy->numNodes);*/
 
 			// furthermore, end joints were removed, so they have no animation data; initialize it as identity
-			for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
+			/*for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
 				p < hierarchyPoseGroup->hposeCount; ++p)
 				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
 			for (j = a3hierarchyGetNodeIndex(hierarchy, "LeftToe_End"), p = 1;
@@ -438,7 +479,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
 			for (j = a3hierarchyGetNodeIndex(hierarchy, "RightToe_End"), p = 1;
 				p < hierarchyPoseGroup->hposeCount; ++p)
-				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
+				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);*/
 
 			// finally, append prefix names to match what is expected for skinning
 			a3hierarchyPrefixNodeNames(scene->hierarchy_skel, "mixamorig:");
@@ -511,9 +552,9 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 				scene->clipPool->sample + j, scene->clipPool->sample + j + 1, fps_hierarchy);
 		for (j = 0; j < hierarchyClipCount; ++j)
 		{
-			a3clipInit(scene->clipPool->clip + j, clipName[j],
+			/*a3clipInit(scene->clipPool->clip + j, clipName[j],
 				scene->clipPool->keyframe + sampleIndexFirst[j],
-				scene->clipPool->keyframe + sampleIndexFinal[j] - 1);
+				scene->clipPool->keyframe + sampleIndexFinal[j] - 1);*/
 			a3clipCalculateDuration(scene->clipPool, j, fps_hierarchy);
 		}
 
@@ -610,7 +651,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		void a3animation_update_sceneGraph(a3_Scene_Animation* scene, a3f64 const dt);
 		for (p = 0; p < 3; ++p)
 		{
-			a3animation_update_animation(scene, 0.0, false);
+			//a3animation_update_animation(scene, 0.0, false);
 			a3animation_update_sceneGraph(scene, 0.0);
 
 //-----------------------------------------------------------------------------
