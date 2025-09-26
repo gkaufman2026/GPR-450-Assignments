@@ -113,7 +113,18 @@ a3i32 a3hierarchyPoseGroupLoadBinary(a3_HierarchyPoseGroup* poseGroup, a3_FileSt
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 				
+				// Sierra
+				// Load is currently not working, either because nothing is being saved so nothing is being loaded or the loader isn't working properly
 
+				ret += (a3ui32)fread(&poseGroup->hposeCount, sizeof(poseGroup->hposeCount), 1, fp);
+
+				// Allocates memory for us
+				// Disregard the return value
+				a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
+				// Calculating the number of bytes
+				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -141,7 +152,19 @@ a3i32 a3hierarchyPoseGroupSaveBinary(a3_HierarchyPoseGroup const* poseGroup, a3_
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 				
+				// Sierra
 
+				// POSES
+				// Save the number of hierarchy poses
+				ret += (a3ui32)fwrite(&poseGroup->hposeCount, sizeof(poseGroup->hposeCount), 1, fp);
+				// Save total number of bytes
+				ret += (a3ui32)fwrite(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
+
+				// CHANNEL
+				ret += (a3ui32)fwrite(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
+
+				//ORDER
+				ret += (a3ui32)fwrite(poseGroup->order, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -406,6 +429,14 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //****TO-DO-ANIM-PROJECT-2: WIP
 //-----------------------------------------------------------------------------
 		
+		// Sierra
+		// For binary loader testing
+		/*{
+			a3hierarchyCreate(hierarchy_out, 67, 0);
+			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2084);
+			return 1;
+		}*/
+
 		//Austin
 		const a3ui32 jointCount = 32;
 

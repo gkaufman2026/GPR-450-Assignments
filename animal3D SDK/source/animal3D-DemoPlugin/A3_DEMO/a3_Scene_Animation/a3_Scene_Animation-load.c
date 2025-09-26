@@ -63,7 +63,11 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 
 
 	a3_FileStream fileStream[1] = { 0 };
+	// ORANGE
+	// Find and delete this file in the directory when testing the binary loader
+	// animal3D SDK\bin\v143\x64\Debug\data
 	const a3byte* const animationStream = "./data/gpro25_base_anim_active.dat";
+	// Controls if binary is loaded, make false when testing
 	const a3boolean force_disable_streaming = true;
 
 	
