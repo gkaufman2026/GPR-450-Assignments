@@ -391,6 +391,8 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 	char key[a3node_nameSize]; // once we implement the hierarchy and segments it will read the 67 lines
 	a3vec3 pos, rot;
 	float scale;
+	a3ui16 j = 0;
+	a3_SpatialPose* spatialPose = 0;
 
 	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
 		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
@@ -399,12 +401,13 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 		printf("%f, %f, %f", pos.x, pos.y, pos.z);
 		printf("\n%f, %f, %f", rot.x, rot.y, rot.z);
 		printf("\n%f", scale);
-		int node = a3hierarchyGetNodeIndex(hierarchy_out, key);
+		j = a3hierarchyGetNodeIndex(hierarchy_out, key);
+		spatialPose = poseGroup_out->hpose[0].hpose_base + j;
 
-		a3spatialPoseSetTranslation(&poseGroup_out->hpose[0].hpose_base[node], pos.x, pos.y, pos.z);
-		a3spatialPoseSetRotation(&poseGroup_out->hpose[0].hpose_base[node], rot.x, rot.y, rot.z);
-		a3spatialPoseSetScale(&poseGroup_out->hpose[0].hpose_base[node], scale, scale, scale);
-		poseGroup_out->hpose[0].hpose_index = node;	
+		a3spatialPoseSetTranslation(spatialPose, pos.x, pos.y, pos.z);
+		a3spatialPoseSetRotation(spatialPose, rot.x, rot.y, rot.z);
+		a3spatialPoseSetScale(spatialPose, scale, scale, scale);
+		//poseGroup_out->hpose[0].hpose_index = node;	
 	}
 
 	return true;
@@ -462,41 +465,79 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 
 		//	}
 		//}
+		//Austin
 
-		// Jerry
-		FILE* animData = fopen(resourceFilePath, "r");
-		char currentLine[100];
+		const a3ui32 jointCount = 32;
 
-		if (animData) {
-			// reads each line until the end of
-			while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-				if (strstr(currentLine, "[Header]")) {
-					// header cannot be parsed
-					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
-						return -1;
-					}
-				}
+		// indices of joints, their parents and branching joints
+		a3ui32 jointIndex = 0;
+		a3i32 jointParentIndex = -1;
+		a3i32 rootJointIndex;
+		a3i32 p = 0;
+		a3i32 j = 0;
+		// initialize hierarchy
+		a3hierarchyCreate(hierarchy_out, jointCount, 0);
 
-				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
-					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
-						return -1;
-					}
-				}
+		// set up joint relationships
+		jointParentIndex = rootJointIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Hips");
+		jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Spine");
+		//jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "skel:spine_mid");
 
-				if (strstr(currentLine, "[BasePosition]")) {
-					// base pos cannot be parsed
-					//if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
-						//return -1;
-					//}
-				}
-			}
-			// Has completed file
-		} else {
-			printf("Cannot find file");
-			return -1;
-		}
+		// allocate poses
+		a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2);
 
-		fclose(animData);
+		// define "bind pose" or "base pose" or the initial transformation
+		//	description for each joint (not a literal transform)
+		p = 0;
+		j = a3hierarchyGetNodeIndex(hierarchy_out, "Hips");
+		poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
+		a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
+		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, -0.1f, +0.1f);
+		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, 0.0f, +3.6f);
+		poseGroup_out->channel[j] = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz;
+
+		j = a3hierarchyGetNodeIndex(hierarchy_out, "Spine");
+		poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
+		a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
+		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, +5.1f, +0.1f);
+		poseGroup_out->channel[j] = a3poseChannel_rotate_xyz;
+
+
+		//// Jerry
+		//FILE* animData = fopen(resourceFilePath, "r");
+		//char currentLine[100];
+
+		//if (animData) {
+		//	// reads each line until the end of
+		//	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+		//		if (strstr(currentLine, "[Header]")) {
+		//			// header cannot be parsed
+		//			if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
+		//				return -1;
+		//			}
+		//		}
+
+		//		if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
+		//			if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
+		//				return -1;
+		//			}
+		//		}
+
+		//		if (strstr(currentLine, "[BasePosition]")) {
+		//			// base pos cannot be parsed
+		//			//if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
+		//				//return -1;
+		//			//}
+		//			parsePositionSection(animData, hierarchy_out, poseGroup_out);
+		//		}
+		//	}
+		//	// Has completed file
+		//} else {
+		//	printf("Cannot find file");
+		//	return -1;
+		//}
+
+		//fclose(animData);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------

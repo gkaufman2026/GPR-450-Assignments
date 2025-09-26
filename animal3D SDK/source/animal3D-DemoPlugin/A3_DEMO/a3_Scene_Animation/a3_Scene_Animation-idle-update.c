@@ -95,6 +95,7 @@ void a3animation_update_animation_skeletal(
 		a3_ClipController* clipCtrl_fk = &scene->clipCtrl[h];
 
 		// update clip controller, keyframe lerp
+		//ORANGE !!!!!!!
 		a3clipControllerUpdate(clipCtrl_fk, dt);
 	}
 

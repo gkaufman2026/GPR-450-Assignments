@@ -423,22 +423,23 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 
 			// edit assets as needed
 			// mixamo assets have the wrong base pose; use first key as base and subtract from all
-			p = 1;
+			//ORANGE
+			/*p = 1;
 			a3hierarchyPoseCopy(hierarchyPoseGroup->hpose, hierarchyPoseGroup->hpose + p, hierarchy->numNodes);
 			for (; p < hierarchyPoseGroup->hposeCount; ++p)
 				a3hierarchyPoseDeconcat(hierarchyPoseGroup->hpose + p, hierarchyPoseGroup->hpose + p,
-					hierarchyPoseGroup->hpose, hierarchy->numNodes);
-
-			// furthermore, end joints were removed, so they have no animation data; initialize it as identity
-			for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
-				p < hierarchyPoseGroup->hposeCount; ++p)
-				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
-			for (j = a3hierarchyGetNodeIndex(hierarchy, "LeftToe_End"), p = 1;
-				p < hierarchyPoseGroup->hposeCount; ++p)
-				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
-			for (j = a3hierarchyGetNodeIndex(hierarchy, "RightToe_End"), p = 1;
-				p < hierarchyPoseGroup->hposeCount; ++p)
-				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
+					hierarchyPoseGroup->hpose, hierarchy->numNodes);*/
+			//ORANGE
+			//// furthermore, end joints were removed, so they have no animation data; initialize it as identity
+			//for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
+			//	p < hierarchyPoseGroup->hposeCount; ++p)
+			//	a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
+			//for (j = a3hierarchyGetNodeIndex(hierarchy, "LeftToe_End"), p = 1;
+			//	p < hierarchyPoseGroup->hposeCount; ++p)
+			//	a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
+			//for (j = a3hierarchyGetNodeIndex(hierarchy, "RightToe_End"), p = 1;
+			//	p < hierarchyPoseGroup->hposeCount; ++p)
+			//	a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
 
 			// finally, append prefix names to match what is expected for skinning
 			a3hierarchyPrefixNodeNames(scene->hierarchy_skel, "mixamorig:");
@@ -514,7 +515,8 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 			a3clipInit(scene->clipPool->clip + j, clipName[j],
 				scene->clipPool->keyframe + sampleIndexFirst[j],
 				scene->clipPool->keyframe + sampleIndexFinal[j] - 1);
-			a3clipCalculateDuration(scene->clipPool, j, fps_hierarchy);
+			//ORANGE
+			//a3clipCalculateDuration(scene->clipPool, j, fps_hierarchy);
 		}
 
 		j = a3clipGetIndexInPool(scene->clipPool, "xbot_idle_f");
@@ -559,6 +561,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 	hierarchyState->hierarchy = 0;
 	a3hierarchyStateCreate(hierarchyState, hierarchy);
 	a3hierarchyPoseCopy(hierarchyState->localSpace, hierarchyPoseGroup->hpose, hierarchy->numNodes);
+	//ORANGE
 	a3hierarchyPoseConvert(hierarchyState->localSpace, hierarchy->numNodes, hierarchyPoseGroup->channel, hierarchyPoseGroup->order);
 	a3kinematicsSolveForward(hierarchyState);
 	a3hierarchyStateUpdateLocalInverse(hierarchyState);
@@ -610,7 +613,8 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		void a3animation_update_sceneGraph(a3_Scene_Animation* scene, a3f64 const dt);
 		for (p = 0; p < 3; ++p)
 		{
-			a3animation_update_animation(scene, 0.0, false);
+			//ORANGE
+			//a3animation_update_animation(scene, 0.0, false);
 			a3animation_update_sceneGraph(scene, 0.0);
 
 //-----------------------------------------------------------------------------
