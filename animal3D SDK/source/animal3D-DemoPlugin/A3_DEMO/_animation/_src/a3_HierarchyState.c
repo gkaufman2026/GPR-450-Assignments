@@ -118,13 +118,47 @@ a3i32 a3hierarchyPoseGroupLoadBinary(a3_HierarchyPoseGroup* poseGroup, a3_FileSt
 
 				ret += (a3ui32)fread(&poseGroup->hposeCount, sizeof(poseGroup->hposeCount), 1, fp);
 
-				// Allocates memory for us
-				// Disregard the return value
-				a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
-				// Calculating the number of bytes
+				// Determine memory requirements
+				a3ui32 const nodeCount = poseGroup->hierarchy->numNodes;
+				a3ui32 const hposeCount = poseGroup->hposeCount, hposeSpace = sizeof(a3_HierarchyPose) * hposeCount;
+				a3ui32 const sposeCount = hposeCount * nodeCount, sposeSpace = sizeof(a3_SpatialPose) * sposeCount;
+				a3ui32 const channelSpace = sizeof(a3_SpatialPoseChannel) * nodeCount;
+				a3ui32 const orderSpace = sizeof(a3_SpatialPoseEulerOrder) * nodeCount;
+				a3ui32 const memreq = hposeSpace + sposeSpace + channelSpace + orderSpace;
+				a3index i;
+
+				// Allocate everything (one malloc)
+				poseGroup->hpose = (a3_HierarchyPose*)malloc(memreq);
+				poseGroup->hpose->hpose_base = poseGroup->pose = (a3_SpatialPose*)(poseGroup->hpose + hposeCount);
+				poseGroup->channel = (a3_SpatialPoseChannel*)(poseGroup->pose + sposeCount);
+				poseGroup->order = (a3_SpatialPoseEulerOrder*)(poseGroup->channel + nodeCount);
+
+				// Set pointers
+				for (i = 1; i < hposeCount; ++i)
+				{
+					poseGroup->hpose[i].hpose_base = poseGroup->hpose[i - 1].hpose_base + nodeCount;
+					poseGroup->hpose[i].hpose_index = i * nodeCount;
+				}
+
 				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
 				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
 				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
+
+				/*a3ui32 const nodeCount = hierarchy->numNodes;
+		a3ui32 const hposeCount = poseCount, hposeSpace = sizeof(a3_HierarchyPose) * hposeCount;
+		a3ui32 const sposeCount = hposeCount * nodeCount, sposeSpace = sizeof(a3_SpatialPose) * sposeCount;
+		a3ui32 const channelSpace = sizeof(a3_SpatialPoseChannel) * nodeCount;
+		a3ui32 const orderSpace = sizeof(a3_SpatialPoseEulerOrder) * nodeCount;
+		a3ui32 const memreq = hposeSpace + sposeSpace + channelSpace + orderSpace;
+		a3index i;*/
+
+				// Allocates memory for us
+				// Disregard the return value
+				/*a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
+				// Calculating the number of bytes
+				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);*/
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -431,11 +465,11 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 		
 		// Sierra
 		// For binary loader testing
-		/*{
+		{
 			a3hierarchyCreate(hierarchy_out, 67, 0);
 			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2084);
 			return 1;
-		}*/
+		}
 
 		//Austin
 		const a3ui32 jointCount = 32;
