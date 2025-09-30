@@ -347,34 +347,18 @@ a3i32 a3hierarchyStateUpdateObjectBindToCurrent(const a3_HierarchyState* state, 
 }
 
 // Jerry
-a3boolean parseKeyValue(FILE* file, char* key, char* value) {
-	char currentLine[256];
-	if (fgets(currentLine, sizeof(currentLine), file) != NULL) {
-		// Checks if currentLine has any "\n" inside of it and removes it from currentLine
-		currentLine[strcspn(currentLine, "\n")] = 0;
-
-		// Checks if its a new section
-		if (currentLine[0] == '[' || currentLine[0] == '#') {
-			return false;
-		}
-
-		// Ensures that there are two variables that get stored on parse
-		if (sscanf(currentLine, "%s %s", key, value) == 2) {
-			return true;
-		}
-		return false;
-	}
-	return true;
-}
-
-// Jerry
 a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSections, a3f32* globalScale) {
+	char currentLine[256];
 	char key[100];
 	char value[100];
 	float unitScale = 1;
 	float scaleFactor = 1;
 
-	while (parseKeyValue(animData, key, value)) {
+	while (currentLine[0] != '[' && currentLine[0] != '#') {
+
+		fgets(currentLine, sizeof(currentLine), animData);
+		sscanf(currentLine, "%s %s", key, value);
+
 		// Read the keys to the associated map
 		if (strstr(key, "FileType")) {
 			printf("%s\n", value);
@@ -430,6 +414,32 @@ a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_Hie
 }
 
 // Jerry
+a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSection) {
+	char currentLine[300];
+	char s[a3node_nameSize];
+	char h[a3node_nameSize];
+
+	printf("\nSegment Names & Hierarchy:\n");
+
+	int parentIndex = 0, childIndex = 0;
+	while (!strstr(currentLine, "# base") && currentLine[0] != '[' && currentLine[0] != '#') {
+		fgets(currentLine, sizeof(currentLine), animData);
+		if (strstr(currentLine, "[BasePosition]\n") != NULL) break;
+
+		sscanf(currentLine, "%s %s", s, h);
+		printf("%s %s\n", s, h);
+
+		parentIndex = a3hierarchyGetNodeIndex(hierarchy_out, s);
+
+		a3hierarchySetNode(hierarchy_out, childIndex, parentIndex, h);
+		childIndex++;
+	}
+
+	*parsedSection = 2;
+	return true;
+}
+
+// Jerry
 a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, a3f32 globalScale, int* parsedSections) {
 	char currentLine[256];
 	char key[a3node_nameSize]; // once we implement the hierarchy and segments it will read the 67 lines
@@ -440,8 +450,9 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 
 	printf("\nBase Position: \n");
 
-	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
+	while (!strstr(currentLine, "# base") && currentLine[0] != '[' && currentLine[0] != '#') {
+		fgets(currentLine, sizeof(currentLine), animData);
+		if (strstr(currentLine, "# ") != NULL) break;
 
 		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
 		printf("%s %f %f %f %f %f %f %f\n", key, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale);
@@ -459,33 +470,6 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 	*parsedSections = 3;
 	return true;
 }
-
-// Jerry
-a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSection) {
-	char currentLine[300];
-	char s[a3node_nameSize];
-	char h[a3node_nameSize];
-
-	printf("\nSegment Names & Hierarchy:\n");
-
-	int parentIndex = 0, childIndex = 0;
-	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
-
-		sscanf(currentLine, "%s %s", s, h);
-		printf("%s %s\n", s, h);
-
-		parentIndex = a3hierarchyGetNodeIndex(hierarchy_out, s);
-
-		a3hierarchySetNode(hierarchy_out, childIndex, parentIndex, h);
-		childIndex++;
-	}
-
-	*parsedSection = 2;
-	return true;
-}
-
-
 
 //-----------------------------------------------------------------------------
 

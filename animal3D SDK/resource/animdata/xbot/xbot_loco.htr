@@ -13,6 +13,7 @@ BoneLengthAxis Y
 ScaleFactor 0.05
 [SegmentNames&Hierarchy]
 Hips	GLOBAL
+Hips	GLOBAL
 Spine	Hips
 Spine1	Spine
 Spine2	Spine1
