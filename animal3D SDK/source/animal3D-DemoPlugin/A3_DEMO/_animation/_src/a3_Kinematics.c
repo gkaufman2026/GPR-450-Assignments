@@ -100,10 +100,15 @@ a3i32 a3kinematicsSolveForwardPartial(const a3_HierarchyState* hierarchyState, c
 static inline void a3kinematicsSolveInverseSingle(const a3_HierarchyState* hierarchyState, const a3ui32 index, const a3ui32 parentIndex)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-3: DONE IN CLASS
 //-----------------------------------------------------------------------------
 
-
+	// T[this_local] = T[parent_object]^-1 * T[this_object]
+	a3real4x4Product(
+		hierarchyState->localSpace->hpose_base[index].transformMat.m,		// Result: this node local-space.
+		hierarchyState->objectSpaceInv->hpose_base[parentIndex].transformMat.m,// Left-hand: parent node object-space inverse.
+		hierarchyState->objectSpace->hpose_base[index].transformMat.m		// Right-hand: this node object space.
+	);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -112,10 +117,11 @@ static inline void a3kinematicsSolveInverseSingle(const a3_HierarchyState* hiera
 static inline void a3kinematicsSolveInverseRoot(const a3_HierarchyState* hierarchyState, const a3ui32 index)
 {
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-3: DONE IN CLASS
 //-----------------------------------------------------------------------------
 
-
+	// T[root_local] = T[root_object]
+	hierarchyState->localSpace->hpose_base[index] = hierarchyState->objectSpace->hpose_base[index];
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -135,10 +141,19 @@ a3i32 a3kinematicsSolveInversePartial(const a3_HierarchyState* hierarchyState, c
 		//		- else
 		//			- copy object matrix to local matrix
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-3: DONE IN CLASS
 //-----------------------------------------------------------------------------
 
-
+		const a3_HierarchyNode* itr = hierarchyState->hierarchy->nodes + firstIndex;
+		const a3_HierarchyNode* const end = itr + nodeCount;
+		for (; itr < end; ++itr)
+		{
+			if (itr->parentIndex >= 0)
+				a3kinematicsSolveInverseSingle(hierarchyState, itr->index, itr->parentIndex);
+			else
+				a3kinematicsSolveInverseRoot(hierarchyState, itr->index);
+		}
+		return (a3i32)(end - itr);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -191,10 +206,19 @@ void a3kinematicsUpdateHierarchyStateIK(a3_HierarchyState* activeHS,
 		//	-> restore local-space matrices to poses
 		//	-> deconcatenate base pose
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-3: DONE IN CLASS
 //-----------------------------------------------------------------------------
 
-
+		a3kinematicsSolveInverse(activeHS);
+		a3hierarchyPoseRestore(activeHS->localSpace,
+			activeHS->hierarchy->numNodes,
+			poseGroup->channel,
+			poseGroup->order);
+		a3hierarchyPoseDeconcat(
+			activeHS->animPose, // result: animation pose
+			activeHS->localSpace, // LH Input: Local pose
+			baseHS->localSpace, // Subtract base local
+			activeHS->hierarchy->numNodes);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
