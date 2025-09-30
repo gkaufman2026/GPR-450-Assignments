@@ -346,28 +346,33 @@ a3i32 a3hierarchyStateUpdateObjectBindToCurrent(const a3_HierarchyState* state, 
 	return -1;
 }
 
-int parseKeyValue(FILE* file, char* key, char* value) {
+// Jerry
+a3boolean parseKeyValue(FILE* file, char* key, char* value) {
 	char currentLine[256];
 	if (fgets(currentLine, sizeof(currentLine), file) != NULL) {
 		// Checks if currentLine has any "\n" inside of it and removes it from currentLine
 		currentLine[strcspn(currentLine, "\n")] = 0;
 
 		// Checks if its a new section
-		if (currentLine[0] == '[') {
-			return 0;
+		if (currentLine[0] == '[' || currentLine[0] == '#') {
+			return false;
 		}
 
+		// Ensures that there are two variables that get stored on parse
 		if (sscanf(currentLine, "%s %s", key, value) == 2) {
-			return 1;
+			return true;
 		}
-		return 0;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
-a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+// Jerry
+a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSections, a3f32* globalScale) {
 	char key[100];
 	char value[100];
+	float unitScale = 1;
+	float scaleFactor = 1;
 
 	while (parseKeyValue(animData, key, value)) {
 		// Read the keys to the associated map
@@ -387,12 +392,12 @@ a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_Hie
 		// Create hierarchy based on the anount of numSegments found in htr
 		else if (strstr(key, "NumSegments")) {
 			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+			a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
 		}
 		// Initalize pose group based on the anount of numSegments found in htr
 		else if (strstr(key, "NumFrames")) {
 			printf("%s\n", value);
-			//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
+			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, atoi(value));
 		}
 		else if (strstr(key, "EulerRotationOrder")) {
 			printf("%s\n", value); 
@@ -400,16 +405,32 @@ a3boolean parseHeaderSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_Hie
 				poseGroup_out->order[0] = a3poseEulerOrder_zyx;
 			}
 		}
+		else if (strstr(key, "CalibrationUnits")) {
+			printf("%s\n", value);
+			// During use case of the announcement, this is here to act as the global scale
+			if (strstr(value, "mm")) {
+				unitScale = 100.f / 1000.f;
+			}
+		}
 		else if (strstr(key, "BoneLengthAxis")) {
 			printf("%s\n", value);
-			//a3hierarchyCreate(hierarchy_out, atoi(value), NULL);
+			if (strstr(value, "Y")) {
+				*poseGroup_out->channel = a3poseChannel_scale_y;
+			}
 		}
+		else if (strstr(key, "ScaleFactor")) {
+			printf("%s\n", value);
+			scaleFactor = (a3f32) atof(value);
+;		}
 	}
 
+	*globalScale = scaleFactor * unitScale;
+	*parsedSections = 1;
 	return true;
 }
 
-a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
+// Jerry
+a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, a3f32 globalScale, int* parsedSections) {
 	char currentLine[256];
 	char key[a3node_nameSize]; // once we implement the hierarchy and segments it will read the 67 lines
 	a3vec3 pos, rot;
@@ -417,36 +438,51 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 	a3ui16 j = 0;
 	a3_SpatialPose* spatialPose = 0;
 
-	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
-		printf("\n%s\n", key);
-		a3f32 posX = pos.x;
-		printf("%f, %f, %f", pos.x, pos.y, pos.z);
-		printf("\n%f, %f, %f", rot.x, rot.y, rot.z);
-		printf("\n%f", scale);
-		j = a3hierarchyGetNodeIndex(hierarchy_out, key);
-		spatialPose = poseGroup_out->hpose[0].hpose_base + j;
+	printf("\nBase Position: \n");
 
-		a3spatialPoseSetTranslation(spatialPose, pos.x, pos.y, pos.z);
+	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
+
+		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
+		printf("%s\n", key);
+
+		a3f32 posX = pos.x;
+		j = a3hierarchyGetNodeIndex(hierarchy_out, key);
+		spatialPose = &poseGroup_out->hpose[0].hpose_base[j];
+
+		// Austin
+		a3spatialPoseSetTranslation(spatialPose, pos.x * globalScale, pos.y * globalScale, pos.z * globalScale);
 		a3spatialPoseSetRotation(spatialPose, rot.x, rot.y, rot.z);
 		a3spatialPoseSetScale(spatialPose, scale, scale, scale);
-		//poseGroup_out->hpose[0].hpose_index = node;	
 	}
 
+	*parsedSections = 3;
 	return true;
 }
 
-a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out) {
-	char currentLine[256];
+// Jerry
+a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSection) {
+	char currentLine[300];
 	char s[a3node_nameSize];
 	char h[a3node_nameSize];
 
-	if (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+	printf("\nSegment Names & Hierarchy:\n");
+
+	int parentIndex = 0, childIndex = 0;
+	while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
+		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
+
 		sscanf(currentLine, "%s %s", s, h);
 		printf("%s\n", s);
 		printf("%s", h);
+
+		parentIndex = a3hierarchyGetNodeIndex(hierarchy_out, s);
+
+		a3hierarchySetNode(hierarchy_out, childIndex, parentIndex, h);
+		childIndex++;
 	}
 
+	*parsedSection = 2;
 	return true;
 }
 
@@ -464,76 +500,78 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //-----------------------------------------------------------------------------
 		
 		// Sierra
+		// Removed for sake of testing - Jerry
 		// For binary loader testing
-		{
+		/*{
 			a3hierarchyCreate(hierarchy_out, 67, 0);
 			a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2084);
 			return 1;
-		}
+		}*/
 
 		//Austin
-		const a3ui32 jointCount = 32;
+		//const a3ui32 jointCount = 32;
 
-		// indices of joints, their parents and branching joints
-		a3ui32 jointIndex = 0;
-		a3i32 jointParentIndex = -1;
-		a3i32 rootJointIndex;
-		a3i32 p = 0;
-		a3i32 j = 0;
-		// initialize hierarchy
-		a3hierarchyCreate(hierarchy_out, jointCount, 0);
+		//// indices of joints, their parents and branching joints
+		//a3ui32 jointIndex = 0;
+		//a3i32 jointParentIndex = -1;
+		//a3i32 rootJointIndex;
+		//a3i32 p = 0;
+		//a3i32 j = 0;
+		//// initialize hierarchy
+		//a3hierarchyCreate(hierarchy_out, jointCount, 0);
 
-		// set up joint relationships
-		jointParentIndex = rootJointIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Hips");
-		jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Spine");
-		//jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "skel:spine_mid");
+		//// set up joint relationships
+		//jointParentIndex = rootJointIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Hips");
+		//jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "Spine");
+		////jointParentIndex = a3hierarchySetNode(hierarchy_out, jointIndex++, jointParentIndex, "skel:spine_mid");
 
-		// allocate poses
-		a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2);
+		//// allocate poses
+		//a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, 2);
 
-		// define "bind pose" or "base pose" or the initial transformation
-		//	description for each joint (not a literal transform)
-		p = 0;
-		j = a3hierarchyGetNodeIndex(hierarchy_out, "Hips");
-		poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
-		a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
-		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, -0.1f, +0.1f);
-		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, 0.0f, +3.6f);
-		poseGroup_out->channel[j] = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz;
+		//// define "bind pose" or "base pose" or the initial transformation
+		////	description for each joint (not a literal transform)
+		//p = 0;
+		//j = a3hierarchyGetNodeIndex(hierarchy_out, "Hips");
+		//poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
+		//a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
+		//a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, -0.1f, +0.1f);
+		//a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, 0.0f, +3.6f);
+		//poseGroup_out->channel[j] = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz;
 
-		j = a3hierarchyGetNodeIndex(hierarchy_out, "Spine");
-		poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
-		a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
-		a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, +5.1f, +0.1f);
-		poseGroup_out->channel[j] = a3poseChannel_rotate_xyz;
+		//j = a3hierarchyGetNodeIndex(hierarchy_out, "Spine");
+		//poseGroup_out->pose = poseGroup_out->hpose[p].hpose_base + j;
+		//a3spatialPoseSetRotation(poseGroup_out->pose, 0.0f, -90.0f, -5.0f);
+		//a3spatialPoseSetTranslation(poseGroup_out->pose, 0.0f, +5.1f, +0.1f);
+		//poseGroup_out->channel[j] = a3poseChannel_rotate_xyz;
 
 
 		// Jerry
 		FILE* animData = fopen(resourceFilePath, "r");
 		char currentLine[100];
+		a3f32 globalScale = 1;
+		int parsedSections = 0;
 
 		if (animData) {
 			// reads each line until the end of
 			while (fgets(currentLine, sizeof(currentLine), animData) != NULL) {
-				if (strstr(currentLine, "[Header]")) {
+				if (parsedSections == 0 && strstr(currentLine, "[Header]")) {
 					// header cannot be parsed
-					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out)) {
+					if (!parseHeaderSection(animData, hierarchy_out, poseGroup_out, &parsedSections, &globalScale)) {
 						return -1;
 					}
 				}
 
-				if (strstr(currentLine, "[SegmentNames&Hierarchy]")) {
-					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out)) {
+				else if (parsedSections == 1) {
+					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out, &parsedSections)) {
 						return -1;
 					}
 				}
 
-				if (strstr(currentLine, "[BasePosition]")) {
+				else if (parsedSections == 2 && strstr(currentLine, "[BasePosition]")) {
 					// base pos cannot be parsed
-					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out)) {
+					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out, globalScale, &parsedSections)) {
 						return -1;
 					}
-					parsePositionSection(animData, hierarchy_out, poseGroup_out);
 				}
 			}
 			// Has completed file

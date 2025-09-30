@@ -451,11 +451,11 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		}
 
 		// save hierarchy assets
-		a3hierarchySaveBinary(hierarchy, fileStream);
-		a3hierarchyPoseGroupSaveBinary(hierarchyPoseGroup, fileStream);
+		//a3hierarchySaveBinary(hierarchy, fileStream);
+		//a3hierarchyPoseGroupSaveBinary(hierarchyPoseGroup, fileStream);
 
-		// save scene graph
-		a3hierarchySaveBinary(scene->sceneGraph, fileStream);
+		//// save scene graph
+		//a3hierarchySaveBinary(scene->sceneGraph, fileStream);
 
 		// done
 		a3fileStreamClose(fileStream);
