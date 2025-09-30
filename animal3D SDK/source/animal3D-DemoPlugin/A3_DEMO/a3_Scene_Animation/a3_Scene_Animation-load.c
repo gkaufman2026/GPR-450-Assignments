@@ -436,7 +436,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 					hierarchyPoseGroup->hpose, hierarchy->numNodes);
 			//ORANGE
 			// furthermore, end joints were removed, so they have no animation data; initialize it as identity
-			for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
+			/*for (j = a3hierarchyGetNodeIndex(hierarchy, "HeadTop_End"), p = 1;
 				p < hierarchyPoseGroup->hposeCount; ++p)
 				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
 			for (j = a3hierarchyGetNodeIndex(hierarchy, "LeftToe_End"), p = 1;
@@ -444,7 +444,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
 			for (j = a3hierarchyGetNodeIndex(hierarchy, "RightToe_End"), p = 1;
 				p < hierarchyPoseGroup->hposeCount; ++p)
-				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);
+				a3spatialPoseReset(hierarchyPoseGroup->hpose[p].hpose_base + j);*/
 
 			// finally, append prefix names to match what is expected for skinning
 			a3hierarchyPrefixNodeNames(scene->hierarchy_skel, "mixamorig:");

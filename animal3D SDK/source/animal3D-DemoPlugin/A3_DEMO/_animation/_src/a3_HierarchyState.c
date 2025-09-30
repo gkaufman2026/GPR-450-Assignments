@@ -471,6 +471,48 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 	return true;
 }
 
+// Jerry
+//a3boolean parseAnimation(FILE* animData, a3_Hierarchy* hierarchy_out, a3_HierarchyPoseGroup* poseGroup_out, int* parsedSections, a3f32 globalScale) {
+//	char currentLine[512];
+//	char key[a3node_nameSize];
+//	int index = 0;
+//	a3vec3 pos = a3vec3_zero, rot = a3vec3_zero;
+//	a3ui16 j = 0;
+//
+//	int globalOffset = 0;
+//
+//	printf("\nModel Animation: \n");
+//
+//	while (!strstr(currentLine, "# turn_r_m end") && !strstr(currentLine, "[EndOfFile]")) {
+//		fgets(currentLine, sizeof(currentLine), animData);
+//
+//		sscanf(currentLine, "%s %d %f %f %f %f %f %f", key, &index, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z);
+//
+//		if (currentLine[0] != '#') {
+//			fgets(currentLine, sizeof(currentLine), animData);
+//			globalOffset += index;
+//		}
+//
+//		if (currentLine == "[") {
+//			// Tristan showed that:
+//			// 67 x 25 array 
+//			// get node index row
+//			// keyframe index column
+//
+//			// Get name of 
+//			int i = a3hierarchyGetNodeIndex(hierarchy_out, key);
+//			int offset = a3hierarchyPoseGroupGetNodePoseOffsetIndex(poseGroup_out, index - 1, i) + (67 * globalOffset);
+//
+//			a3spatialPoseSetTranslation	(poseGroup_out-> pose  + offset, pos.x * globalScale, pos.y * globalScale, pos.z * globalScale);
+//			a3spatialPoseSetRotation	(poseGroup_out-> pose + offset, rot.x, rot.y, rot.z);
+//			//a3spatialPoseSetScale		(poseGroup_out-> pose + offset, scale, scale, scale);
+//		}
+//	}
+//
+//	*parsedSections = 4;
+//	return true;
+//}
+
 //-----------------------------------------------------------------------------
 
 // load HTR file, read and store complete pose group and hierarchy
@@ -557,6 +599,13 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out, globalScale, &parsedSections)) {
 						return -1;
 					}
+				}
+
+				else if (parsedSections == 3) {
+					return 1;
+					/*if (!parseAnimation(animData, hierarchy_out, poseGroup_out, &parsedSections, globalScale)) {
+						return -1;
+					}*/
 				}
 			}
 			// Has completed file
