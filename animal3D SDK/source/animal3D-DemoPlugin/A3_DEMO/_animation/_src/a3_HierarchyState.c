@@ -444,7 +444,7 @@ a3boolean parsePositionSection(FILE* animData, a3_Hierarchy* hierarchy_out, a3_H
 		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
 
 		sscanf(currentLine, "%s %f %f %f %f %f %f %f", key, &pos.x, &pos.y, &pos.z, &rot.x, &rot.y, &rot.z, &scale);
-		printf("%s\n", key);
+		printf("%s %f %f %f %f %f %f %f\n", key, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale);
 
 		a3f32 posX = pos.x;
 		j = a3hierarchyGetNodeIndex(hierarchy_out, key);
@@ -473,8 +473,7 @@ a3boolean parseSegmentHierarchy(FILE* animData, a3_Hierarchy* hierarchy_out, a3_
 		if (strstr(currentLine, "# base") || currentLine[0] == '[' || currentLine[0] == '#') break;
 
 		sscanf(currentLine, "%s %s", s, h);
-		printf("%s\n", s);
-		printf("%s", h);
+		printf("%s %s\n", s, h);
 
 		parentIndex = a3hierarchyGetNodeIndex(hierarchy_out, s);
 
@@ -561,13 +560,15 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 					}
 				}
 
+				// On end of parse header section, run this
 				else if (parsedSections == 1) {
 					if (!parseSegmentHierarchy(animData, hierarchy_out, poseGroup_out, &parsedSections)) {
 						return -1;
 					}
 				}
 
-				else if (parsedSections == 2 && strstr(currentLine, "[BasePosition]")) {
+				// On end of parse segment hierarchy section, run this
+				else if (parsedSections == 2) {
 					// base pos cannot be parsed
 					if (!parsePositionSection(animData, hierarchy_out, poseGroup_out, globalScale, &parsedSections)) {
 						return -1;
