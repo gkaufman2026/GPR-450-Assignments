@@ -18,6 +18,8 @@
 	animal3D SDK: Minimal 3D Animation Framework
 	By Daniel S. Buckstein
 	
+	a3hierarchyPoseGroupLoadBinary and a3hierarchyPoseGroupSaveBinary functions edited by Sierra Blume
+
 	a3_HierarchyState.c
 	Implementation of transform hierarchy state.
 */
@@ -116,49 +118,17 @@ a3i32 a3hierarchyPoseGroupLoadBinary(a3_HierarchyPoseGroup* poseGroup, a3_FileSt
 				// Sierra
 				// Load is currently not working, either because nothing is being saved so nothing is being loaded or the loader isn't working properly
 
+				//Read the hposeCount first because it's used for determining memory allocation
 				ret += (a3ui32)fread(&poseGroup->hposeCount, sizeof(poseGroup->hposeCount), 1, fp);
 
-				// Determine memory requirements
-				a3ui32 const nodeCount = poseGroup->hierarchy->numNodes;
-				a3ui32 const hposeCount = poseGroup->hposeCount, hposeSpace = sizeof(a3_HierarchyPose) * hposeCount;
-				a3ui32 const sposeCount = hposeCount * nodeCount, sposeSpace = sizeof(a3_SpatialPose) * sposeCount;
-				a3ui32 const channelSpace = sizeof(a3_SpatialPoseChannel) * nodeCount;
-				a3ui32 const orderSpace = sizeof(a3_SpatialPoseEulerOrder) * nodeCount;
-				a3ui32 const memreq = hposeSpace + sposeSpace + channelSpace + orderSpace;
-				a3index i;
-
-				// Allocate everything (one malloc)
-				poseGroup->hpose = (a3_HierarchyPose*)malloc(memreq);
-				poseGroup->hpose->hpose_base = poseGroup->pose = (a3_SpatialPose*)(poseGroup->hpose + hposeCount);
-				poseGroup->channel = (a3_SpatialPoseChannel*)(poseGroup->pose + sposeCount);
-				poseGroup->order = (a3_SpatialPoseEulerOrder*)(poseGroup->channel + nodeCount);
-
-				// Set pointers
-				for (i = 1; i < hposeCount; ++i)
-				{
-					poseGroup->hpose[i].hpose_base = poseGroup->hpose[i - 1].hpose_base + nodeCount;
-					poseGroup->hpose[i].hpose_index = i * nodeCount;
-				}
-
-				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
-				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
-				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
-
-				/*a3ui32 const nodeCount = hierarchy->numNodes;
-		a3ui32 const hposeCount = poseCount, hposeSpace = sizeof(a3_HierarchyPose) * hposeCount;
-		a3ui32 const sposeCount = hposeCount * nodeCount, sposeSpace = sizeof(a3_SpatialPose) * sposeCount;
-		a3ui32 const channelSpace = sizeof(a3_SpatialPoseChannel) * nodeCount;
-		a3ui32 const orderSpace = sizeof(a3_SpatialPoseEulerOrder) * nodeCount;
-		a3ui32 const memreq = hposeSpace + sposeSpace + channelSpace + orderSpace;
-		a3index i;*/
-
-				// Allocates memory for us
 				// Disregard the return value
-				/*a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
-				// Calculating the number of bytes
+				// Allocates memory for all of the components we are reading to
+				a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
+				
+				// Read pose, channel, and order data
 				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hposeCount * poseGroup->hierarchy->numNodes, fp);
 				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
-				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);*/
+				ret += (a3ui32)fread(poseGroup->order, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
