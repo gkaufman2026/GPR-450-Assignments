@@ -105,9 +105,9 @@ static inline void a3kinematicsSolveInverseSingle(const a3_HierarchyState* hiera
 
 	// T[this_local] = T[parent_object]^-1 * T[this_object]
 	a3real4x4Product(
-		hierarchyState->localSpace->hpose_base[index].transformMat.m,		// Result: this node local-space.
-		hierarchyState->objectSpaceInv->hpose_base[parentIndex].transformMat.m,// Left-hand: parent node object-space inverse.
-		hierarchyState->objectSpace->hpose_base[index].transformMat.m		// Right-hand: this node object space.
+		hierarchyState->localSpace->hpose_base[index].transformMat.m,			// Result: this node local-space.
+		hierarchyState->objectSpaceInv->hpose_base[parentIndex].transformMat.m, // Left-hand: parent node object-space inverse.
+		hierarchyState->objectSpace->hpose_base[index].transformMat.m			// Right-hand: this node object space.
 	);
 
 //-----------------------------------------------------------------------------
