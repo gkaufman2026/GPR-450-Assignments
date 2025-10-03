@@ -294,7 +294,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+	// 
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3

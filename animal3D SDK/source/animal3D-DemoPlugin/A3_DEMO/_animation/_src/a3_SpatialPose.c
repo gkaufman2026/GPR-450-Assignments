@@ -102,7 +102,9 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 }
 
 // restore single node pose from matrix
-#include "math.h"
+extern float asinf(float y_r);
+extern float atan2f(float y, float x);
+
 a3i32 a3spatialPoseRestore(a3_SpatialPose* spatialPose, const a3_SpatialPoseChannel channel, const a3_SpatialPoseEulerOrder order)
 {
 	if (spatialPose)
@@ -127,8 +129,6 @@ a3i32 a3spatialPoseRestore(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		//   { ?  ?  ? }
 		//
 		// 
-
-		// NEED TO IMPLEMENT MORE
 		
 		// extract translation 
 		spatialPose->translate = spatialPose->transformMat.v3;
@@ -147,7 +147,7 @@ a3i32 a3spatialPoseRestore(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		// extract angles 
 		// refer to pose restoration
 		spatialPose->rotate.x = a3real_rad2deg * atan2f	( R.m12, R.m22);
-		spatialPose->rotate.y = a3real_rad2deg * asin	(-R.m02);
+		spatialPose->rotate.y = a3real_rad2deg * asinf	(-R.m02);
 		spatialPose->rotate.z = a3real_rad2deg * atan2f	( R.m01, R.m00);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
