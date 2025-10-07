@@ -270,12 +270,20 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	// one pose not hierarchy
 	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj);
 
-	// Deconcatenate base pose
-	a3hierarchyPoseDeconcat(
-		activeHS->animPose, // result: animation pose
-		activeHS->localSpace, // LH Input: Local pose
-		baseHS->localSpace, // Subtract base local
-		activeHS->hierarchy->numNodes);
+	// Move the following functions to spatial pose as youre using the individual pose not entire hierarchy
+
+	// restore ls matrix to pose - a3spatialPoseRestore();
+	/*a3hierarchyPoseRestore(activeHS->localSpace,
+		activeHS->hierarchy->numNodes,
+		poseGroup->channel,
+		poseGroup->order);*/
+
+	// Deconcatenate base pose - a3spatialPoseDeconcat()
+	//a3hierarchyPoseDeconcat(
+	//	activeHS->animPose, // result: animation pose
+	//	activeHS->localSpace, // LH Input: Local pose
+	//	baseHS->localSpace, // Subtract base local
+	//	activeHS->hierarchy->numNodes);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
