@@ -266,9 +266,16 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
+	// Reassign resolved transform to obj space
+	// one pose not hierarchy
+	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj);
 
-
-
+	// Deconcatenate base pose
+	a3hierarchyPoseDeconcat(
+		activeHS->animPose, // result: animation pose
+		activeHS->localSpace, // LH Input: Local pose
+		baseHS->localSpace, // Subtract base local
+		activeHS->hierarchy->numNodes);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
@@ -276,7 +283,7 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 
 void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
-	a3ui32 const sceneGraphIndex_hierarchyObj, a3ui32 const sceneGraphIndex_effector,
+	a3ui32 const sceneGraphIndex_hierarchyObj, a3ui32 const sceneGraphIndex_effector, 
 	a3ui32 const hierarchyObjIndex_affected, a3_Basis const basis_hierarchyObj, a3_Basis const basis_affected)
 {
 	a3mat3 m_hierarchyObj, m_affected;
@@ -294,12 +301,37 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-	// 
+	// FIRST STEP:
+	// transform everything into the space of the skeleton/hierarchy
+	// -> look at target
+
+	// MIDDLE STEP:
+	// solver: build an orthonormal basis -> joint-to-object
+	//  1. Direction basis = target - joint pos
+	//  2. Side basis = known up x direction basis
+	//	3. Up basis = direction basis x side basis
+	//  4. Normalize all (1 and 2)
+
+	// LAST STEP:
+	// resolve every affected joint: 
+	//a3kinematicsResolvePostIK
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
 }
+
+/* Jerry Notes
+	sceneGraphIndex_hierarchyObj - indices, space u wanna be in
+	sceneGraphIndex_effector_end - 
+	sceneGraphIndex_constraint - pull vector constraint
+
+	hierarchyObjIndex_affected_end -  
+	hierarchyObjIndex_affected_hinge - knee/elbow
+	hierarchyObjIndex_affected_base - shoulder/hip
+
+	basis_hierarchyObj - describing how node is oriented in world space
+*/
 
 void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
@@ -326,7 +358,30 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	// FIRST STEP:
+	// transform everything into the space of the skeleton/hierarchy
+	//  -> wrist effector
+	//  -> pull vector constraint
 
+	// MAIN STEP:
+	// Solve joint-to-object for end, hinge and base
+	//	-> end pos*
+	//	-> hinge pos*
+	// 1. Base joint to end effector (vec) and distance 
+	// 2. Base joint to pull vector constraint 
+	// 3. plane normal = (base to pull) x (base to end)
+	// 4. geometric (heron's formula) or algebraic (law of cosines) 
+	//	-> solves elbow pos 
+		// https://champlain.instructure.com/courses/2477446/files/362873629?module_item_id=117715617
+	// 5. "look at" solves shoulderand elbow rotation as they need to be rebased
+
+
+	// LAST STEP:
+	// resolve every affected joint: 
+	//	-> Work from root to leaf
+	//a3kinematicsResolvePostIK
+	//a3kinematicsResolvePostIK
+	//a3kinematicsResolvePostIK
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
