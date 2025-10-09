@@ -306,21 +306,59 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
+	// JERRY
 
 	// FIRST STEP:
 	// transform everything into the space of the skeleton/hierarchy
 	// -> look at target
 
+	a3real4x4 transformMat;
+	a3real4x4Product(transformMat,
+		baseHS->hpose->hpose_base[hierarchyObjIndex_affected].transformMat.m,
+		sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.m);
+
 	// MIDDLE STEP:
 	// solver: build an orthonormal basis -> joint-to-object
 	//  1. Direction basis = target - joint pos
-	//  2. Side basis = known up x direction basis
-	//	3. Up basis = direction basis x side basis
+	//  2. Side basis = known up x direction basis (cross product)
+	//	3. Up basis = direction basis x side basis (cross product)
 	//  4. Normalize all (1 and 2)
+
+	// Calculating the direction basis by grabbing the effector (target) and the affected (joint)
+	a3vec4 dir;
+	a3real4Diff(&dir.x,
+		&sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, 
+		&baseHS->hpose->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x);
+
+	a3real4Normalize(&dir.x);
+
+	// adding direction basis to affected matrix
+	m_affected.v0 = dir.xyz;
+
+	a3vec3 vecYZero = { 0, 1, 0 };
+
+	// adding the cross product of the world's up and the direction 
+	// RESULT - SIDE BASIS
+	a3real3Cross(&m_affected.v1.x, &vecYZero.y, &dir.x);
+
+	// adding the cross product of the world's up and the direction 
+	// RESULT - UP BASIS
+	a3real3Cross(&m_affected.v2.x, &m_affected.v0.x, &m_affected.v1.x);
+
+	// Normalizing the direction and the side basis
+	a3real4Normalize(&m_affected.v0.x);
+	a3real4Normalize(&m_affected.v1.x);
+	// DO NOT ADD v2 it will corrupt m_affected!!!
+
+	a3real4x4 lookAt;
+	a3real4x4Set(lookAt, m_affected.v0.x, m_affected.v0.y, m_affected.v0.z, 0,
+						 m_affected.v1.x, m_affected.v1.y, m_affected.v1.z, 0,
+						 m_affected.v2.x, m_affected.v2.y, m_affected.v0.z, 0,
+						 0,				  0,			   0,				1);
 
 	// LAST STEP:
 	// resolve every affected joint: 
-	//a3kinematicsResolvePostIK
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, lookAt);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
