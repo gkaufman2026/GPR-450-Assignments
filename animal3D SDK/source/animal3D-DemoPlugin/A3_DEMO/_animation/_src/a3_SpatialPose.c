@@ -110,7 +110,7 @@ a3i32 a3spatialPoseRestore(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 	if (spatialPose)
 	{
 //-----------------------------------------------------------------------------
-//****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
+//****TO-DO-ANIM-PROJECT-3: DONE IN CLASS
 //-----------------------------------------------------------------------------
 		
 		// ****HINT: this is the opposite of the above function!

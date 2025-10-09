@@ -250,8 +250,6 @@ void a3kinematicsUpdateHierarchyStateSkin(a3_HierarchyState* activeHS,
 }
 
 
-//-----------------------------------------------------------------------------
-
 // helper to resolve single-joint IK after solver
 static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
@@ -266,24 +264,24 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
+
+	// Jerry
 	// Reassign resolved transform to obj space
-	// one pose not hierarchy
 	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj);
 
-	// Move the following functions to spatial pose as youre using the individual pose not entire hierarchy
+	// compute object-space inverse matrix
+	a3real4x4GetInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, j2obj);
+
+	// compute local-space matrix
+	a3real4x4Product(activeHS->localSpace->hpose_base[nodeIndex].transformMat.m,
+					 activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m,
+					 baseHS->localSpace->hpose_base[nodeIndex].transformMat.m);
 
 	// restore ls matrix to pose - a3spatialPoseRestore();
-	/*a3hierarchyPoseRestore(activeHS->localSpace,
-		activeHS->hierarchy->numNodes,
-		poseGroup->channel,
-		poseGroup->order);*/
+	a3spatialPoseRestore(poseGroup->hpose->hpose_base + nodeIndex, poseGroup->channel[0], poseGroup->order[0]);
 
 	// Deconcatenate base pose - a3spatialPoseDeconcat()
-	//a3hierarchyPoseDeconcat(
-	//	activeHS->animPose, // result: animation pose
-	//	activeHS->localSpace, // LH Input: Local pose
-	//	baseHS->localSpace, // Subtract base local
-	//	activeHS->hierarchy->numNodes);
+	a3spatialPoseDeconcat(activeHS->hpose->hpose_base + nodeIndex, activeHS->hpose->hpose_base + nodeIndex, baseHS->hpose->hpose_base + nodeIndex);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
