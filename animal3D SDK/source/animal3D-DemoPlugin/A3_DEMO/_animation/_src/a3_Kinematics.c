@@ -274,14 +274,14 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 
 	// compute local-space matrix
 	a3real4x4Product(activeHS->localSpace->hpose_base[nodeIndex].transformMat.m,
-					 activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m,
-					 baseHS->localSpace->hpose_base[nodeIndex].transformMat.m);
+					 activeHS->objectSpaceInv->hpose_base[activeHS->hierarchy->nodes[nodeIndex].parentIndex].transformMat.m,
+					 baseHS->objectSpace->hpose_base[nodeIndex].transformMat.m);
 
 	// restore ls matrix to pose - a3spatialPoseRestore();
-	a3spatialPoseRestore(poseGroup->hpose->hpose_base + nodeIndex, poseGroup->channel[0], poseGroup->order[0]);
+	a3spatialPoseRestore(poseGroup->hpose->hpose_base + nodeIndex, poseGroup->channel[nodeIndex], poseGroup->order[nodeIndex]);
 
 	// Deconcatenate base pose - a3spatialPoseDeconcat()
-	a3spatialPoseDeconcat(activeHS->hpose->hpose_base + nodeIndex, activeHS->hpose->hpose_base + nodeIndex, baseHS->hpose->hpose_base + nodeIndex);
+	a3spatialPoseDeconcat(activeHS->animPose->hpose_base + nodeIndex, activeHS->localSpace->hpose_base + nodeIndex, baseHS->localSpace->hpose_base + nodeIndex);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
@@ -312,7 +312,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// transform everything into the space of the skeleton/hierarchy
 	// -> look at target
 
-	a3real4x4 transformMat;
+	a3real4x4 transformMat, lookAt;
 	a3real4x4Product(transformMat,
 		baseHS->hpose->hpose_base[hierarchyObjIndex_affected].transformMat.m,
 		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.m);
@@ -337,26 +337,26 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// adding the cross product of the world's up and the direction 
 	// RESULT - SIDE BASIS
 	a3vec3 yOne = {0, 1, 0};
-	//a3real3Cross(&m_affected.v1.x, &yOne.y, &dir.x);
+	a3real3Cross(&m_affected.v1.x, &yOne.y, &dir.x);
 
 	// adding the cross product of the world's up and the direction 
 	// RESULT - UP BASIS
-	//a3real3Cross(&m_affected.v2.x, &m_affected.v0.x, &m_affected.v1.x);
+	a3real3Cross(&m_affected.v2.x, &m_affected.v0.x, &m_affected.v1.x);
 
 	// Normalizing the direction and the side basis
-	//a3real4Normalize(&m_affected.v0.x);
-	//a3real4Normalize(&m_affected.v1.x);
+	a3real4Normalize(&m_affected.v0.x);
+	a3real4Normalize(&m_affected.v1.x);
 	//a3real4Normalize(&m_affected.v2.x); 
 	// // DO NOT ADD v2 it will corrupt m_affected!!!
 
-	/*a3real4x4Set(lookAt, m_affected.v0.x, m_affected.v0.y, m_affected.v0.z, 0,
+	a3real4x4Set(lookAt, m_affected.v0.x, m_affected.v0.y, m_affected.v0.z, 0,
 						 m_affected.v1.x, m_affected.v1.y, m_affected.v1.z, 0,
 						 m_affected.v2.x, m_affected.v2.y, m_affected.v0.z, 0,
-						 0,				  0,			   0,				1);*/
+						 0,				  0,			   0,				1);
 
 	// LAST STEP:
 	// resolve every affected joint: 
-	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, lookAt);
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, lookAt);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
