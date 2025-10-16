@@ -418,12 +418,17 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	// taking direction vector from RUDE
 	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
 
-	// calculate difference between effector and neck joint
-	a3real4Diff(&jDiff.x,
-		&activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, // direction matrix of affected
-		hierachyEffector.v);
-
 	activeHS->hpose->hpose_base[59].translate = hierachyEffector;
+	
+	a3real4Diff(&jDiff.x, &activeHS->hpose->hpose_base[59].translate.x, &activeHS->hpose->hpose_base[58].translate.x);
+	activeHS->hpose->hpose_base[58].translate.x = jDiff.x;
+
+
+	//IK ARM GRAPHIC
+	// DISTANCE = Pwrist - Pbase
+	// Constraint = Pconstraint - Pbase
+	// N(???) = DISANCE * CONSTRAINT
+
 
 	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
 	
@@ -437,7 +442,6 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	//a3real3Cross(&basis.v2.x, &yOne.y, &jDiff.v);
 	// Normalizing the direction basis
 	
-
 
 	// MAIN STEP:
 	// Solve joint-to-object for end, hinge and base
@@ -455,7 +459,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	// LAST STEP:
 	// resolve every affected joint: 
 	//	-> Work from root to leaf
-	//a3kinematicsResolvePostIK
+	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, sceneGraphIndex_effector_end, *hierachyRig); ??
 	//a3kinematicsResolvePostIK
 	//a3kinematicsResolvePostIK
 
