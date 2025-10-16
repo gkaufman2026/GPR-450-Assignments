@@ -405,30 +405,33 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-	//hierarchyObjIndex_affected_hinge : WristEffector(L)
+	//hierarchyObjIndex_affected_hinge : WristEffector(L) //12
 	//hierarchyObjIndex_affected_end: WristConstraint(L)
-	//sceneGraphIndex_effector_end : AnkleEffector(L)
+	//sceneGraphIndex_effector_end : AnkleEffector(L) //59
 	//sceneGraphIndex_constraint : AnkleConstraint(L)
 	//hierarchyObjIndex_affected_base : WristConstraint(R)
 	
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
-	a3vec4 hierachyEffector, jDiff;
+	a3vec4 hierachyEffector, dist, constraint, total;
 	// taking direction vector from RUDE
-	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
+	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x, *hierachyRig);
 
-	activeHS->hpose->hpose_base[59].translate = hierachyEffector;
+	activeHS->hpose->hpose_base[12].translate = hierachyEffector;
 	
-	a3real4Diff(&jDiff.x, &activeHS->hpose->hpose_base[59].translate.x, &activeHS->hpose->hpose_base[58].translate.x);
-	activeHS->hpose->hpose_base[58].translate.x = jDiff.x;
-
+	/*a3real4Diff(&jDiff.x, &activeHS->hpose->hpose_base[59].translate.x, &activeHS->hpose->hpose_base[58].translate.x);
+	activeHS->hpose->hpose_base[58].translate.x = jDiff.x;*/
 
 	//IK ARM GRAPHIC
 	// DISTANCE = Pwrist - Pbase
+	a3real4Diff(&dist.x, &activeHS->hpose->hpose_base[12].translate.x, &activeHS->hpose->hpose_base[10].translate.x);
+	a3real3Normalize(&dist.x);
 	// Constraint = Pconstraint - Pbase
+	a3real4Diff(&constraint.x, &sceneGraphState->localSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.x, &activeHS->hpose->hpose_base[10].translate.x);
 	// N(???) = DISANCE * CONSTRAINT
-
+	a3real2ProductComp(&total.x, &constraint.x, &dist.x);
+	activeHS->hpose->hpose_base[11].translate.x = total.x;
 
 	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
 	
