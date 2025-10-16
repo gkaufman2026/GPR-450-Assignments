@@ -288,6 +288,11 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 //-----------------------------------------------------------------------------
 }
 
+//how its called for neck
+//a3kinematicsUpdateLookAtIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
+//sceneObjectRoot->sceneGraphIndex, sceneObject_effector->sceneGraphIndex,
+//j_neck, basis_obj, basis_neck);
+
 void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
 	a3ui32 const sceneGraphIndex_hierarchyObj, a3ui32 const sceneGraphIndex_effector, 
@@ -353,11 +358,13 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 
 	//a3real4x4Product(&lookAt.m, m_affected.m, &lookAt.m);
 
-	//a3real4Set(&lookAt.v3.x, 
-	//	activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x,
-	//	activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y,
-	//	activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z,
-	//	1);
+	/*a3real4Set(&lookAt.v3.x, 
+		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x,
+		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y,
+		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z,
+		1);*/
+
+	activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
 
 	// LAST STEP:
 	// resolve every affected joint: 
@@ -410,31 +417,37 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	//sceneGraphIndex_effector_end : AnkleEffector(L) //59
 	//sceneGraphIndex_constraint : AnkleConstraint(L)
 	//hierarchyObjIndex_affected_base : WristConstraint(R)
+
+	// invoke IK CALL ON RIGHT ARM
+	/*a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
+		sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
+		j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);*/
 	
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
 	a3vec4 hierachyEffector, dist, constraint, total;
 	// taking direction vector from RUDE
-	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x, *hierachyRig);
+	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
 
-	activeHS->hpose->hpose_base[12].translate = hierachyEffector;
+	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_end].translate = hierachyEffector;
 	
 	/*a3real4Diff(&jDiff.x, &activeHS->hpose->hpose_base[59].translate.x, &activeHS->hpose->hpose_base[58].translate.x);
 	activeHS->hpose->hpose_base[58].translate.x = jDiff.x;*/
 
 	//IK ARM GRAPHIC
 	// DISTANCE = Pwrist - Pbase
-	a3real4Diff(&dist.x, &activeHS->hpose->hpose_base[12].translate.x, &activeHS->hpose->hpose_base[10].translate.x);
+	a3real4Diff(&dist.x, &activeHS->hpose->hpose_base[hierarchyObjIndex_affected_end].translate.x, &activeHS->hpose->hpose_base[hierarchyObjIndex_affected_base].translate.x);
 	a3real3Normalize(&dist.x);
 	// Constraint = Pconstraint - Pbase
-	a3real4Diff(&constraint.x, &sceneGraphState->localSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.x, &activeHS->hpose->hpose_base[10].translate.x);
+	a3real4Diff(&constraint.x, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_constraint].transformMat.v3.x, &activeHS->hpose->hpose_base[hierarchyObjIndex_affected_base].translate.x);
 	// N(???) = DISANCE * CONSTRAINT
 	a3real2ProductComp(&total.x, &constraint.x, &dist.x);
-	activeHS->hpose->hpose_base[11].translate.x = total.x;
+	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.x = total.x;
+	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.y = total.y;
+	//activeHS->hpose->hpose_base[11].translate.z = total.z;
 
 	
-
 	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
 	
 	// FIRST STEP:
