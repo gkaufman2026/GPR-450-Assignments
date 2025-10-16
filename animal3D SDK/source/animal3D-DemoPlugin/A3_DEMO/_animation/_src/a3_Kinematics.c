@@ -405,15 +405,28 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	//hierarchyObjIndex_affected_hinge : WristEffector(L)
+	//hierarchyObjIndex_affected_end: WristConstraint(L)
+	//sceneGraphIndex_effector_end : AnkleEffector(L)
+	//sceneGraphIndex_constraint : AnkleConstraint(L)
+	//hierarchyObjIndex_affected_base : WristConstraint(R)
+	
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
-	a3vec4 hierachyEffector;
+	a3vec4 hierachyEffector, jDiff;
 	// taking direction vector from RUDE
-	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
+	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
 
-	activeHS->hpose->hpose_base[1].translate.x = hierachyEffector.x;
+	// calculate difference between effector and neck joint
+	a3real4Diff(&jDiff.x,
+		&activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, // direction matrix of affected
+		hierachyEffector.v);
 
+	activeHS->hpose->hpose_base[59].translate = hierachyEffector;
+
+	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
+	
 	// FIRST STEP:
 	// transform everything into the space of the skeleton/hierarchy
 	//  -> wrist effector
