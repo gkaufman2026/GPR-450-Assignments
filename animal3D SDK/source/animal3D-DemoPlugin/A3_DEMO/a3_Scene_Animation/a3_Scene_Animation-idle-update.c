@@ -135,7 +135,8 @@ void a3animation_update_applyEffectors(a3_Scene_Animation* scene,
 
 		// RIGHT LEG REACH
 		{
-			// right ankle effector object
+			// right 
+			// effector object
 			a3_SceneObject const* sceneObject_ankleEffector = scene->obj_skeleton_ankleEffector_r_ctrl;
 
 			// write ankle constraint object

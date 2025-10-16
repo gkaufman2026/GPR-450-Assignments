@@ -395,7 +395,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		return;
 	if (!a3basisToMat3(m_affected_base.m, basis_affected_base))
 		return;
-
+	
 	if ((!sceneGraphState || !activeHS || !baseHS || !poseGroup) ||
 		(activeHS->hierarchy != baseHS->hierarchy) ||
 		(activeHS->hierarchy != poseGroup->hierarchy))
@@ -405,10 +405,26 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
+
+	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
+	a3vec4 hierachyEffector;
+	// taking direction vector from RUDE
+	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x, *hierachyRig);
+
+	activeHS->hpose->hpose_base[1].translate.x = hierachyEffector.x;
+
 	// FIRST STEP:
 	// transform everything into the space of the skeleton/hierarchy
 	//  -> wrist effector
 	//  -> pull vector constraint
+
+	// direction basis [r t; D 1]
+	// direction basis is the vector from the target to the objects position and it requires a normalized
+	//a3real3Cross(&basis.v2.x, &yOne.y, &jDiff.v);
+	// Normalizing the direction basis
+	
+
 
 	// MAIN STEP:
 	// Solve joint-to-object for end, hinge and base
@@ -429,6 +445,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	//a3kinematicsResolvePostIK
 	//a3kinematicsResolvePostIK
 	//a3kinematicsResolvePostIK
+
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3

@@ -119,7 +119,9 @@ void a3animation_load_resetEffectors(a3_Scene_Animation* scene,
 	sceneObject->scale.x = a3real_third;
 	sceneObject->scaleMode = 1;
 
-	// right ankle effector
+	// right 
+	// 
+	// effector
 	// position on ankle
 	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:RightFoot");
 	sceneObject = scene->obj_skeleton_ankleEffector_r_ctrl;

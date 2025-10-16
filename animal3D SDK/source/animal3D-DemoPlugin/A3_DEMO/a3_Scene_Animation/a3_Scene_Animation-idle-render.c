@@ -220,6 +220,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 	const a3_SceneObject* activeCameraObject = activeCamera->sceneObject;
 
 	// current hull for scene object being rendered, for convenience
+
 	const a3_SceneObject* currentSceneObject, * endSceneObject;
 
 	// temp drawable pointers
