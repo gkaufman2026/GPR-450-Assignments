@@ -433,6 +433,8 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	a3real2ProductComp(&total.x, &constraint.x, &dist.x);
 	activeHS->hpose->hpose_base[11].translate.x = total.x;
 
+	
+
 	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
 	
 	// FIRST STEP:
@@ -465,6 +467,8 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, sceneGraphIndex_effector_end, *hierachyRig); ??
 	//a3kinematicsResolvePostIK
 	//a3kinematicsResolvePostIK
+	/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, hierarchyObjIndex_affected_hinge, hierarchyObjIndex_affected_end
+	, basis_hierarchyObj, basis_affected_end);*/
 
 
 //-----------------------------------------------------------------------------
