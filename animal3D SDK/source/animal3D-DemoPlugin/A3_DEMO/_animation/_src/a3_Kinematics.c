@@ -271,8 +271,9 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj); 
 
 	// compute object-space inverse matrix
-	a3real4x4GetInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, j2obj);
+	a3real4x4TransformInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, j2obj);
 
+	
 	// compute local-space matrix
 	a3real4x4Product(activeHS->localSpace->hpose_base[nodeIndex].transformMat.m,
 					 activeHS->objectSpaceInv->hpose_base[activeHS->hierarchy->nodes[nodeIndex].parentIndex].transformMat.m,
@@ -339,36 +340,46 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 		hierachyEffector.v);
 
 	a3vec3 yOne = { 0, 1, 0 };
-	a3mat4 lookAt;
+	a3mat3 look;
 
 	// direction basis [r t; D 1]
 	// direction basis is the vector from the target to the objects position and it requires a normalized
 	//a3real3Cross(&basis.v2.x, &yOne.y, &jDiff.v);
-	a3real4Set(&lookAt.v2.x, jDiff.x, jDiff.y, jDiff.z, 0);
+	//a3real4Set(&look.v2.x, jDiff.x, jDiff.y, jDiff.z, 0);
 	// Normalizing the direction basis
-	a3real4Normalize(&lookAt.v2.x);
+	//a3real4Normalize(&look.v2.x);
 
 	// right basis [R t ; d 1]
-	a3real3Cross(&lookAt.v0.x, &yOne.y, &jDiff.x);
+	a3real3Cross(&look.v0.x, &yOne.y, &jDiff.x);
 	// Normalizing the up basis
-	a3real4Normalize(&lookAt.v0.x);
+	a3real4Normalize(&look.v0.x);
 
 	// up vector [r T ; d 1] - no need to normalize, others are already normalized
-	a3real3Cross(&lookAt.v1.x, &lookAt.v0.x, &lookAt.v2.x);
+	a3real3Cross(&look.v1.x, &look.v0.x, &look.v2.x);
 
-	//a3real4x4Product(&lookAt.m, m_affected.m, &lookAt.m);
+	a3real3x3Product(look.m, m_affected.m, look.m);
 
-	/*a3real4Set(&lookAt.v3.x, 
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x,
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y,
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z,
-		1);*/
+	a3mat4 lookAt;
+	a3mat4 affectedMat = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat;
 
-	activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
+	a3real4x4Set(lookAt.m,
+		look.x0, look.y0, look.z0, 0,
+		look.x1, look.y1, look.z1, 0,
+		look.x2, look.y2, look.z2, 0,
+		affectedMat.v3.x, affectedMat.v3.y, affectedMat.v3.z, 0);
+
+	//activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
+
+	//sceneGraphState->hpose->hpose_base[sceneGraphIndex_hierarchyObj].rotate.x = 5;
+
+	//TEMPORARY
+	activeHS->hpose->hpose_base[5].rotate.x = jDiff.x*50;
+	activeHS->hpose->hpose_base[5].rotate.y = jDiff.y * 50;
+	//activeHS->hpose->hpose_base[5].rotate.z += 200;
 
 	// LAST STEP:
 	// resolve every affected joint: 
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, lookAt.m);
+	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, lookAt.m);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -411,17 +422,8 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
-	//hierarchyObjIndex_affected_hinge : WristEffector(L) //12
-	//hierarchyObjIndex_affected_end: WristConstraint(L)
-	//sceneGraphIndex_effector_end : AnkleEffector(L) //59
-	//sceneGraphIndex_constraint : AnkleConstraint(L)
-	//hierarchyObjIndex_affected_base : WristConstraint(R)
-
-	// invoke IK CALL ON RIGHT ARM
-	/*a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-		sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
-		j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);*/
+	
+	//Austin
 	
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
@@ -445,10 +447,8 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	a3real2ProductComp(&total.x, &constraint.x, &dist.x);
 	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.x = total.x;
 	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.y = total.y;
-	//activeHS->hpose->hpose_base[11].translate.z = total.z;
-
+	//z
 	
-	//activeHS->objectSpace->hpose_base[59].translate = hierachyEffector;
 	
 	// FIRST STEP:
 	// transform everything into the space of the skeleton/hierarchy
@@ -483,6 +483,10 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, hierarchyObjIndex_affected_hinge, hierarchyObjIndex_affected_end
 	, basis_hierarchyObj, basis_affected_end);*/
 
+	// resolve IN HIGHARCHAL ORDER
+	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, *hierachyRig);
+	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, *hierachyRig);
+	//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, *hierachyRig);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
