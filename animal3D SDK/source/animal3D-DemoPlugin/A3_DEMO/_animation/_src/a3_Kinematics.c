@@ -271,7 +271,7 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj); 
 
 	// compute object-space inverse matrix
-	a3real4x4GetInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, j2obj);
+	a3real4x4TransformInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, j2obj);
 
 	// compute local-space matrix
 	a3real4x4Product(activeHS->localSpace->hpose_base[nodeIndex].transformMat.m,
@@ -298,7 +298,6 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3ui32 const sceneGraphIndex_hierarchyObj, a3ui32 const sceneGraphIndex_effector, 
 	a3ui32 const hierarchyObjIndex_affected, a3_Basis const basis_hierarchyObj, a3_Basis const basis_affected)
 {
-	// Jerry being too lazy to type out class names instead of typing even though hes writing out this comment at this exact moment...
 	a3mat3 m_hierarchyObj, m_affected;
 	if (!a3basisToMat3(m_hierarchyObj.m, basis_hierarchyObj))
 		return;
@@ -319,12 +318,12 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// transform everything into the space of the skeleton/hierarchy
 	// -> look at target
 
-	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
+	a3real4x4* hierachyRig = &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
 	a3vec4 hierachyEffector, jDiff;
 	// taking direction vector from RUDE
-	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, *hierachyRig);
+	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, *hierachyRig);
 
 	// MIDDLE STEP:
 	// solver: build an orthonormal basis -> joint-to-object
@@ -334,37 +333,41 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	//  4. Normalize all (1 and 2)
 
 	// calculate difference between effector and neck joint
-	a3real4Diff(&jDiff.x,
+	a3real3Diff(&jDiff.x,
 		&activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x, // direction matrix of affected
 		hierachyEffector.v);
 
 	a3vec3 yOne = { 0, 1, 0 };
-	a3mat4 lookAt;
+	a3mat3 look;
 
 	// direction basis [r t; D 1]
-	// direction basis is the vector from the target to the objects position and it requires a normalized
-	//a3real3Cross(&basis.v2.x, &yOne.y, &jDiff.v);
-	a3real4Set(&lookAt.v2.x, jDiff.x, jDiff.y, jDiff.z, 0);
+	// direction basis is the vector from the target to the objects position and it requires to be normalized
+	a3real3Set(&look.v2.x, jDiff.x, jDiff.y, jDiff.z);
 	// Normalizing the direction basis
-	a3real4Normalize(&lookAt.v2.x);
+	a3real3Normalize(&look.v2.x);
 
 	// right basis [R t ; d 1]
-	a3real3Cross(&lookAt.v0.x, &yOne.y, &jDiff.x);
+	a3real3Cross(&look.v0.x, &yOne.y, &jDiff.x);
 	// Normalizing the up basis
-	a3real4Normalize(&lookAt.v0.x);
+	a3real3Normalize(&look.v0.x);
 
 	// up vector [r T ; d 1] - no need to normalize, others are already normalized
-	a3real3Cross(&lookAt.v1.x, &lookAt.v0.x, &lookAt.v2.x);
+	a3real3Cross(&look.v1.x, &look.v0.x, &look.v2.x);
 
-	//a3real4x4Product(&lookAt.m, m_affected.m, &lookAt.m);
+	a3real3Normalize(&look.v1.x);
 
-	/*a3real4Set(&lookAt.v3.x, 
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x,
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y,
-		activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z,
-		1);*/
+	//a3real3x3Product(look.m, m_affected.m, look.m);
 
-	activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
+	a3mat4 lookAt;
+	a3mat4 affectedMat = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat;
+
+	a3real4x4Set(lookAt.m, 
+		look.x0,	look.y0,	look.z0,	affectedMat.v3.x,
+		look.x1,	look.y1,	look.z1,	affectedMat.v3.y,
+		look.x2,	look.y2,	look.z2,	affectedMat.v3.z,
+		0,			0,			0,			1);
+
+	//activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
 
 	// LAST STEP:
 	// resolve every affected joint: 
