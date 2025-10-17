@@ -319,7 +319,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
-	a3vec4 hierachyEffector, jDiff, jNorm, jZrot;
+	a3vec4 hierachyEffector, jDiff, jNorm, jZrot, jXrot, jYrot;
 	// taking direction vector from RUDE
 	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, *hierachyRig);
 
@@ -336,9 +336,17 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 
 	// Zrot = v / |v|
 	a3real4QuotientComp(&jZrot.x, &jNorm.x, &jDiff.x);
+	//z
+	a3vec3 yOne = { 0, 1, 0 };
 
-	//TEMPORARY
-	activeHS->hpose->hpose_base[5].rotate.z += jZrot.x;
+	a3real3Cross(&jXrot.x, &yOne.x, &jZrot.x);
+	a3real3Cross(&jYrot.x, &jXrot.x, &jZrot.x);
+
+	activeHS->hpose->hpose_base[4].rotate.z = -jZrot.x;
+	activeHS->hpose->hpose_base[4].rotate.y = jYrot.x;
+	activeHS->hpose->hpose_base[4].rotate.x = jXrot.x;
+
+	//activeHS->hpose->hpose_base[5].rotate.z += jZrot.x * 10;
 
 	//activeHS->hpose->hpose_base[5].rotate.z += 200;
 
@@ -412,7 +420,6 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	a3real2ProductComp(&total.x, &constraint.x, &dist.x);
 	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.x = total.x;
 	activeHS->hpose->hpose_base[hierarchyObjIndex_affected_hinge].translate.y = total.y;
-	//z
 	
 	
 	// FIRST STEP:
