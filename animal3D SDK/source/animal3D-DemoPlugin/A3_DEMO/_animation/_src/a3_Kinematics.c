@@ -316,65 +316,30 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //-----------------------------------------------------------------------------
 	// JERRY
 
-	// FIRST STEP:
-	// transform everything into the space of the skeleton/hierarchy
-	// -> look at target
-
 	a3real4x4* hierachyRig = &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m;
 
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
-	a3vec4 hierachyEffector, jDiff;
+	a3vec4 hierachyEffector, jDiff, jNorm, jZrot;
 	// taking direction vector from RUDE
 	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, *hierachyRig);
 
-	// MIDDLE STEP:
-	// solver: build an orthonormal basis -> joint-to-object
-	//  1. Direction basis = target - joint pos
-	//  2. Side basis = known up x direction basis (cross product)
-	//	3. Up basis = direction basis x side basis (cross product)
-	//  4. Normalize all (1 and 2)
-
 	// calculate difference between effector and neck joint
+	//V = Plocation - Pneck
 	a3real4Diff(&jDiff.x,
 		&activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x, // direction matrix of affected
 		hierachyEffector.v);
 
-	a3vec3 yOne = { 0, 1, 0 };
-	a3mat3 look;
+	jNorm = jDiff;
 
-	// direction basis [r t; D 1]
-	// direction basis is the vector from the target to the objects position and it requires a normalized
-	//a3real3Cross(&basis.v2.x, &yOne.y, &jDiff.v);
-	//a3real4Set(&look.v2.x, jDiff.x, jDiff.y, jDiff.z, 0);
-	// Normalizing the direction basis
-	//a3real4Normalize(&look.v2.x);
+	//|v|
+	a3real3Normalize(&jDiff.x);
 
-	// right basis [R t ; d 1]
-	a3real3Cross(&look.v0.x, &yOne.y, &jDiff.x);
-	// Normalizing the up basis
-	a3real4Normalize(&look.v0.x);
-
-	// up vector [r T ; d 1] - no need to normalize, others are already normalized
-	a3real3Cross(&look.v1.x, &look.v0.x, &look.v2.x);
-
-	a3real3x3Product(look.m, m_affected.m, look.m);
-
-	a3mat4 lookAt;
-	a3mat4 affectedMat = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat;
-
-	a3real4x4Set(lookAt.m,
-		look.x0, look.y0, look.z0, 0,
-		look.x1, look.y1, look.z1, 0,
-		look.x2, look.y2, look.z2, 0,
-		affectedMat.v3.x, affectedMat.v3.y, affectedMat.v3.z, 0);
-
-	//activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
-
-	//sceneGraphState->hpose->hpose_base[sceneGraphIndex_hierarchyObj].rotate.x = 5;
+	// Zrot = v / |v|
+	a3real4QuotientComp(&jZrot.x, &jNorm.x, &jDiff.x);
 
 	//TEMPORARY
-	activeHS->hpose->hpose_base[5].rotate.x = jDiff.x*50;
-	activeHS->hpose->hpose_base[5].rotate.y = jDiff.y * 50;
+	activeHS->hpose->hpose_base[5].rotate.z += jZrot.x;
+
 	//activeHS->hpose->hpose_base[5].rotate.z += 200;
 
 	// LAST STEP:
