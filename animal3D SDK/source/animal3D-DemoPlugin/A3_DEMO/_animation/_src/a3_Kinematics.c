@@ -323,7 +323,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// transforms scene based on the matrixactiveHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x
 	a3vec4 hierachyEffector, jDiff;
 	// taking direction vector from RUDE
-	a3real4ProductTransform(hierachyEffector.v, &sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x, *hierachyRig);
+	a3real4ProductTransform(hierachyEffector.v, sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.xyz.v, *hierachyRig);
 
 	// MIDDLE STEP:
 	// solver: build an orthonormal basis -> joint-to-object
@@ -362,10 +362,10 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3mat4 affectedMat = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat;
 
 	a3real4x4Set(lookAt.m, 
-		look.x0,	look.y0,	look.z0,	affectedMat.v3.x,
-		look.x1,	look.y1,	look.z1,	affectedMat.v3.y,
-		look.x2,	look.y2,	look.z2,	affectedMat.v3.z,
-		0,			0,			0,			1);
+		look.x0,	look.y0,	look.z0,											0,
+		look.x1,	look.y1,	look.z1,											0,
+		look.x2,	look.y2,	look.z2,											0,
+		affectedMat.v3.xyz.x,	affectedMat.v3.xyz.y,	affectedMat.v3.xyz.z,		1);
 
 	//activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate.x = 6;
 
